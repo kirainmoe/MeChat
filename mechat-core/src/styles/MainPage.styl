@@ -1,0 +1,105 @@
+.mechat-mainpage
+    width: 100%
+    height: 100%
+    position: absolute
+    display: flex
+
+    .mechat-mainpage-nav
+        width: 70px
+        height: 100%
+        background: lighten(#000, 30%)
+        padding-top: 40px
+        // position: absolute;
+        display: inline-block
+
+        & > a
+            display: block
+            width: 100%
+            height: 70px
+            text-align: center
+            font-size: 30px
+            color: #fff
+
+.mechat-nav-avatar-container
+    text-align: center
+    margin-bottom: 20px
+
+.mechat-nav-avatar
+    width: 50px
+    height: 50px
+    border-radius: 50%
+
+// 消息列表
+.mechat-messages
+    width: 240px
+    height: 100%
+    display: inline-block
+    background: darken(#fff, 3%)
+.mechat-messages-title
+    height: 40px
+    line-height: 40px
+    font-size: 14px
+    text-align: center
+    background: rgb(238, 235, 232)
+    margin: 0px
+    font-weight: normal
+.mechat-messages-fetching
+    height: 40px
+    line-height: 40px
+    font-size: 14px
+    text-align: center
+    background: rgb(255, 204, 153)
+    margin: 0px
+    font-weight: normal
+.mechat-dialog
+    width: 100%
+    height: 60px
+    overflow: hidden
+    padding: 10px
+    display: flex
+    color: #000
+    text-decoration: none
+    &:hover
+        background: darken(#eee, 10%)
+    &.active
+        background: darken(#eee, 20%)
+    .mechat-dialog-avatar
+        margin-right: 10px
+        position: relative
+        .mechat-dialog-new
+            width: 7px
+            height: 7px
+            border-radius: 50%
+            background: #f00
+            display: block
+            position: absolute
+            right: 3px
+            top: 3px
+        img
+            width: 40px
+            height 40px
+            border-radius: 50%
+    .mechat-dialog-meta
+        width: calc(100% - 50px)
+        height: 40px
+        position: relative
+        .mechat-dialog-title
+            max-width: 80%
+            font-size: 14px
+            font-weight: bold
+            margin-bottom: 5px
+        .mechat-dialog-mess
+            width: 100%
+        p
+            width: 100%
+            font-size: 12px
+            margin: 0px
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        .mechat-dialog-time
+            position: absolute;
+            right: 0px
+            top: 1px
+            font-size: 12px
+            color: #888

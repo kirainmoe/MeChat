@@ -1,4 +1,6 @@
+const production = process.env.NODE_ENV === 'production';
+
 export default {
-    apiUrl: 'http://localhost:61616/',
-    wsUrl: 'ws://localhost:61616/entry',
+    apiUrl: production ? 'http://aya.kirainmoe.com:61616/' : 'http://localhost:61616/',
+    wsUrl: production ? 'ws://aya.kirainmoe.com:61616/entry' : 'ws://localhost:61616/entry',
 };

@@ -67,6 +67,7 @@ class ChatPage extends Component {
     const text = this.textarea.value,
       uid = this.props.match.params.id;
     this.props.store.sendMessage(uid, text, 'string');
+    this.props.store.setRead(uid);
     this.textarea.value = '';
 
     this.chatContent.scrollTop = this.chatContent.scrollHeight;

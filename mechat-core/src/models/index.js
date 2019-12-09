@@ -60,6 +60,14 @@ export default class Model {
     } 
 
     @action
+    setNewAvatar(url, flag) {
+        if (!flag)
+            this.avatar = this.API('avatar/') + url;
+        else
+            this.avatar = url;
+    }
+
+    @action
     addFriend(friend) {
         this.friends.push(friend);
         this.uidKeyMap[friend.uid] = friend;

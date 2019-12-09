@@ -27,15 +27,28 @@ class ProfileEdit extends Component {
         return;
       }
       
-
       const form = new FormData();
       form.append('avatar', this.avatarUpload.files[0]);
+      form.append('uid', this.props.store.uid);
+      form.append('token', this.props.store.token);
       fetch(this.props.store.API('uploadAvatar'), {
         method: 'POST',
         headers: {},
         body: form
-      }).then(res => res.json()).then(data => {
-        console.log(data);
+      }).then(res => res.json()).then(res => {
+        if (res.status === 403) {
+          alert("身份验证失败，请重新登录。");
+
+          sessionStorage.removeItem("userInfo");
+          this.props.history.push("/");
+        } else {
+          if (res.status === 200) {
+            const fileObj = this.avatarUpload.files[0];
+            const uri = window.URL.createObjectURL(fileObj);
+
+            this.props.store.setNewAvatar(uri, true);
+          }
+        }
       });
     }
 
@@ -93,6 +106,7 @@ class ProfileEdit extends Component {
                 this.selectAvatar();
               }}
               ref={ref => (this.avatar = ref)}
+              title="点击修改头像"
             ></img>
           </div>
           <form

@@ -64,7 +64,7 @@ class FriendsList extends Component {
           sessionStorage.removeItem('userInfo');
           this.props.history.push('/');
         } else {
-          if (res.status == 200) {
+          if (res.status === 200) {
             alert("添加好友成功.");
             this.props.store.addFriend(res.payload);
           } else {

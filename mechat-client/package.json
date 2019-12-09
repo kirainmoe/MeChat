@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env NODE_ENV=development electron main.js",
     "prod": "cross-env NODE_ENV=production electron main.js",
-    "pack": "cross-env NODE_ENV=production electron-packager . MeChat --win --out=./release --arch=x64 --app-version=1.0 --overwrite",
-    "pack:macos": "cross-env NODE_ENV=production electron-packager . MeChat --platform=darwin --arch=x64 --out=./ --asar"
+    "pack": "cross-env NODE_ENV=production electron-packager . MeChat --win --out=../release --arch=x64 --app-version=1.0 --overwrite --icon=./mechat.ico",
+    "pack:macos": "cross-env NODE_ENV=production electron-packager . MeChat --platform=darwin --arch=x64 --out=../release --asar"
   },
   "author": "Yume Maruyama",
   "license": "MIT",

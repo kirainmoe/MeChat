@@ -1,3 +1,5 @@
+const path = require('path');
+
 const config = {
     server: {
         port: 61616
@@ -14,7 +16,8 @@ const config = {
                 return `mongodb://${this.host}:${this.port}/${this.dbname}`;
             return `mongodb://${this.username}:${this.password}@${this.host}:${this.port}/${this.dbname}`;
         }
-    }
+    },
+    avatarPath: __dirname + '/public/avatar/'
 };
 
 module.exports = config;

@@ -167,7 +167,7 @@ class ChatController {
           content: record.content,
           read: record.read
         });
-        if (!record.read) {
+        if (!record.read && record.from == 0) {
           all[id].read = false;
           await this.mdb.findOneAndUpdate({ _id: ObjectId(record._id) }, { $set: { read: true } });
         }

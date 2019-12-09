@@ -8,6 +8,8 @@ import "../styles/LoginPage.styl";
 import config from "../config";
 import { inject, observer } from "mobx-react";
 
+const defaultAvatar = require("../images/defaultAvatar.jpg");
+
 @inject('store')
 @observer
 class LoginPage extends Component {
@@ -15,7 +17,8 @@ class LoginPage extends Component {
     super(props);
     this.state = {
       nickname: "MeChat",
-      avatar: require("../images/defaultAvatar.jpg")
+      avatar: defaultAvatar,
+      logining: false
     };
   }
 
@@ -25,6 +28,10 @@ class LoginPage extends Component {
         .createHash("md5")
         .update(this.passwordInput.value)
         .digest("hex");
+    this.setState({
+      logining: true
+    });
+
     const loginUri = config.apiUrl + "login";
     honoka
       .post(loginUri, {
@@ -34,18 +41,45 @@ class LoginPage extends Component {
         }
       })
       .then(res => {
-        if (typeof res == "string") res = JSON.parse(res);
-        console.log(res);
+        if (typeof res === "string") res = JSON.parse(res);
+
+        this.setState({
+          logining: false
+        });
 
         if (res.status !== 200) {
           console.log(res, typeof res);
           alert("登录失败，错误信息：" + res.message);
         } else {
           res.avatar = config.apiUrl + 'avatar/' + res.avatar;
+
+          localStorage.setItem(username, JSON.stringify({
+            avatar: res.avatar,
+            nickname: res.nickname
+          }));
           sessionStorage.setItem("userInfo", JSON.stringify(res));
+          
           this.props.history.push('/app/message');
         }
       });
+  }
+
+  onUsernameInput() {
+    const username = this.usernameInput.value,
+      recordedInfo = localStorage.getItem(username);
+    if (recordedInfo) {
+      const res = JSON.parse(recordedInfo);
+      this.setState({
+        ...res
+      });
+    } else {
+      if (this.state.nickname != 'MeChat') {
+        this.setState({
+          nickname: 'MeChat',
+          avatar: defaultAvatar
+        });
+      }
+    }
   }
 
   componentDidMount() {
@@ -58,42 +92,53 @@ class LoginPage extends Component {
       <div className="mechat-loginpage">
         <div className="mechat-login-personinfo">
           <p className="mechat-login-avatar-container">
-            <img
+            <div
               className="mechat-login-avatar"
-              src={this.state.avatar}
-              alt="avatar"
+              style={{
+                background: `url('${this.state.avatar}') no-repeat center / cover`
+              }}
             />
           </p>
           <p className="mechat-login-nickname">{this.state.nickname}</p>
         </div>
-        <input
-          type="text"
-          name="username"
-          className="mechat-login-input-username"
-          ref={ref => (this.usernameInput = ref)}
-          placeholder="用户名"
-        />
-        <input
-          type="password"
-          name="password"
-          className="mechat-login-input-password"
-          ref={ref => (this.passwordInput = ref)}
-          placeholder="密码"
-        />
-        <div className="mechat-login-actions">
-          <button
-            type="button"
-            onClick={() => this.login()}
-            className="mechat-login-button"
-          >
-            登录
-          </button>
-          <Link to="/register" className="mechat-login-register">
-            没有账号？注册一个
-          </Link>
+        <div className="mechat-login-hint" style={{
+          display: this.state.logining ? 'block' : 'none'
+        }}>
+          正在登录...
+        </div>
+        <div className="mechat-login-input" style={{
+          display: this.state.logining ? 'none' : 'block'
+        }}>
+          <input
+            type="text"
+            name="username"
+            className="mechat-login-input-username"
+            ref={ref => (this.usernameInput = ref)}
+            onChange={() => this.onUsernameInput()}
+            placeholder="用户名"
+          />
+          <input
+            type="password"
+            name="password"
+            className="mechat-login-input-password"
+            ref={ref => (this.passwordInput = ref)}
+            placeholder="密码"
+          />
+          <div className="mechat-login-actions">
+            <button
+              type="button"
+              onClick={() => this.login()}
+              className="mechat-login-button"
+            >
+              登录
+            </button>
+            <Link to="/register" className="mechat-login-register">
+              没有账号？注册一个
+            </Link>
+          </div>
         </div>
         <div className="mechat-login-copyright">
-          &copy;2019 XMU CS - Data Structure Experiment / by Yume Maruyama
+          &copy;2019 XMU CS - Data-Structure Curriculum Design <br/> by Yume Maruyama
         </div>
       </div>
     );

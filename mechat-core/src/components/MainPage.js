@@ -17,6 +17,7 @@ import ChatPage from './ChatPage';
 import FriendsList from "./FriendsList";
 import ProfilePage from "./ProfilePage";
 import ProfileEdit from './ProfileEdit';
+import AboutPage from "./AboutPage";
 
 @inject("store")
 @observer
@@ -117,6 +118,10 @@ class MainPage extends Component {
           <Route path='/app/editProfile'>
             <FriendsList />
             <ProfileEdit />
+          </Route>
+
+          <Route path='/app/about'>
+            <AboutPage />
           </Route>
         </HashRouter>
       </div>

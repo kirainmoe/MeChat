@@ -48,6 +48,7 @@ const registerRouter = (app, db) => {
     app.post('/updateProfile', (req, res) => {
         profile.updateProfile(req, res);
     });
+
     app.post('/uploadAvatar', (req, res) => {
         profile.uploadAvatar(req, res);
     });

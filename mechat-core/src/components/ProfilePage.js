@@ -5,10 +5,18 @@ import { Link } from "react-router-dom";
 
 import "../styles/ProfilePage.styl";
 import config from "../config";
+import honoka from "honoka";
 
 @inject("store")
 @observer
 class ProfilePage extends Component {  
+  constructor(props) {
+    super(props);
+    this.state = {
+      modifyAlias: false
+    };
+  }
+
   chatWith(uid, nickname, avatar) {
       if (!this.props.store.messageList[uid])
         this.props.store.addDialog(uid);
@@ -19,6 +27,39 @@ class ProfilePage extends Component {
     return config.apiUrl + "avatar/" + avatar;
   }
 
+  changeAlias() {
+    this.setState({
+      modifyAlias: true
+    });
+  }
+
+  confirmChange() {
+    const target = this.props.match.params.id,
+      alias = this.aliasInput.value;
+    honoka.post(this.props.store.API('changeAlias'), {
+      data: {
+        uid: this.props.store.uid,
+        token: this.props.store.token,
+        target,
+        alias
+      }
+    }).then(res => {
+      if (res.status === 403) {
+        alert("身份验证失败，请重新登录。");
+
+        sessionStorage.removeItem("userInfo");
+        this.props.history.push("/");
+      } else {
+        if (res.status === 200) {
+          this.props.store.updateAlias(target, alias);
+          this.setState({
+            modifyAlias: false
+          });
+        }
+      }
+    });
+  }
+
   render() {
     const uid = this.props.match.params.id;
     let user;
@@ -27,7 +68,6 @@ class ProfilePage extends Component {
     } else {
         user = this.props.store.uidKeyMap[uid];
     }
-    console.log(user);
     return (
       <div className="mechat-profile-page">
         <p className="mechat-profile-title">个人资料</p>
@@ -37,6 +77,18 @@ class ProfilePage extends Component {
           </div>
           <div className="mechat-profile-meta">
             <h1 className="mechat-profile-nickname">{user.nickname}</h1>
+            <p className="mechat-profile-alias">
+              备注：{user.alias ? user.alias : '无'}
+              <span className="mechat-profile-alias-change" onClick={() => this.changeAlias()}>
+                修改备注
+              </span>
+            </p>
+            <p className="mechat-profile-alias-input" style={{
+              display: this.state.modifyAlias ? 'block' : 'none'
+            }}>
+              <input type="text" defaultValue={user.alias} ref={ref => this.aliasInput = ref} />
+              <button className="mechat-profile-alias-confirm" onClick={() => this.confirmChange()}>确定</button>
+            </p>
             <p className="mechat-profile-account">MeChat 账号：{user.username}</p>
 
             <p className="mechat-profile-signature">签名：{user.signature ? user.signature : '无'}</p>

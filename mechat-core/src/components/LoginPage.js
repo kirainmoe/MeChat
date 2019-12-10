@@ -73,7 +73,7 @@ class LoginPage extends Component {
         ...res
       });
     } else {
-      if (this.state.nickname != 'MeChat') {
+      if (this.state.nickname !== 'MeChat') {
         this.setState({
           nickname: 'MeChat',
           avatar: defaultAvatar
@@ -91,14 +91,14 @@ class LoginPage extends Component {
     return (
       <div className="mechat-loginpage">
         <div className="mechat-login-personinfo">
-          <p className="mechat-login-avatar-container">
+          <div className="mechat-login-avatar-container">
             <div
               className="mechat-login-avatar"
               style={{
                 background: `url('${this.state.avatar}') no-repeat center / cover`
               }}
             />
-          </p>
+          </div>
           <p className="mechat-login-nickname">{this.state.nickname}</p>
         </div>
         <div className="mechat-login-hint" style={{

@@ -41,6 +41,11 @@ class ChatController {
       return;
     }
 
+    if (type == 'image' && content.length / 1024 / 1024 >= 2) {
+      response.send(throwError(403, 1032, "Image too large."));
+      return;
+    }
+
     const ts = new Date();
 
     if (userMap[to]) {

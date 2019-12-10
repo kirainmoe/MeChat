@@ -39,7 +39,15 @@ class MessageList extends Component {
           </div>
           <div className="mechat-dialog-meta">
             <p className="mechat-dialog-title">{item.nickname}</p>
-            <p className="mechat-dialog-mess">{item.records.length ? item.records[item.records.length-1].content : ''}</p>
+            <p className="mechat-dialog-mess">{(() => {
+              if (item.records.length) {
+                if (item.records[item.records.length-1].type === "image")
+                  return "[图片]";
+                else
+                  return item.records[item.records.length-1].content;
+              } else
+                return '';
+            })()}</p>
             <span className="mechat-dialog-time">{dateStr}</span>
           </div>
       </NavLink>

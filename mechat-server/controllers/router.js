@@ -48,10 +48,12 @@ const registerRouter = (app, db) => {
     app.post('/updateProfile', (req, res) => {
         profile.updateProfile(req, res);
     });
-
     app.post('/uploadAvatar', (req, res) => {
         profile.uploadAvatar(req, res);
     });
+    app.post('/changeAlias', (req, res) => {
+        profile.changeAlias(req, res);
+    })
 
     // message interface
     app.post('/sendMessage', (req, res) => {

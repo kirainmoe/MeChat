@@ -19,7 +19,9 @@ class FriendsList extends Component {
             <img src={config.apiUrl + 'avatar/' + friend.avatar} alt="avatar" />
           </div>
           <div className="mechat-dialog-meta">
-            <p className="mechat-dialog-title">{friend.nickname}</p>
+            <p className="mechat-dialog-title">
+              {friend.alias ? `${friend.alias} (${friend.nickname})` : friend.nickname}
+            </p>
             <p className="mechat-dialog-mess">{friend.signature}</p>
           </div>
         </NavLink>

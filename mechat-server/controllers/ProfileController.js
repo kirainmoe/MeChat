@@ -43,7 +43,7 @@ class ProfileController {
     const rawFriendList = JSON.parse(res.friends),
       friends = [];
     for (const i in rawFriendList) {
-      const friendId = rawFriendList[i];
+      const friendId = rawFriendList[i].uid;
       const cur = await this.db.findOne({ _id: ObjectId(friendId) });
       if (cur == null) return;
       friends.push({
@@ -51,7 +51,8 @@ class ProfileController {
         username: cur.username,
         nickname: cur.nickname,
         avatar: cur.avatar,
-        signature: cur.signature
+        signature: cur.signature,
+        alias: rawFriendList[i].alias
       });
     }
     response.send(
@@ -78,15 +79,24 @@ class ProfileController {
       response.send(throwError(404, 1015, "Friends does not exist."));
       return;
     }
-    const currentFriends = JSON.parse(currentUser.friends);
-    if (currentFriends.indexOf(res._id.toString()) >= 0) {
-      response.send(throwError(404, 1016, "already friends."));
-      return;
+    const currentFriends = JSON.parse(currentUser.friends),
+        resId = res._id.toString(),
+        curId = currentUser._id.toString();
+
+    if (currentFriends[resId]) {
+        response.send(throwError(404, 1016, "already friends."));
+        return;
     }
     const resFriends = JSON.parse(res.friends);
 
-    currentFriends.push(res._id.toString());
-    resFriends.push(currentUser._id.toString());
+    currentFriends[resId] = {
+        uid: resId,
+        alias: ''
+    };
+    resFriends[curId] = {
+        uid: currentUser._id.toString(),
+        alias: ''
+    };
 
     this.db.findOneAndUpdate(
       { _id: ObjectId(uid) },
@@ -154,6 +164,42 @@ class ProfileController {
     );
   }
 
+  // 修改备注
+  async changeAlias(req, response) {
+    response.header("Content-Type", "application/json");      
+    if (!checkField(req.body, ['uid', 'token', 'target', 'alias'])) {
+        response.send(throwError(400, 1020, "Field can not be empty."));
+        return;
+    }
+
+    const { uid, token, target, alias } = req.body;
+    if (!this.auth(uid, token)) {
+        response.send(throwError(403, 1010, "Auth token is invalid."));
+        return;
+      }
+
+    const user = await this.db.findOne({ _id: ObjectId(uid) });
+    if (!user) {
+        response.send(throwError(400, 1024, "user not exists."));
+        return;
+    }
+    const currentFriends = JSON.parse(user.friends);
+    if (!currentFriends[target]) {
+        response.send(throwError(400, 1025, "target not exists."));
+        return;
+    }
+    currentFriends[target].alias = alias;
+    await this.db.updateOne({ _id: ObjectId(uid) }, {
+        $set: {
+            friends: JSON.stringify(currentFriends)
+        }
+    });
+    response.send(JSON.stringify({
+        status: 200,
+        message: 'successfully changed alias.'
+    }));
+  }
+
   // 上传头像
   async uploadAvatar(req, response) {
     response.header("Content-Type", "application/json");
@@ -164,7 +210,7 @@ class ProfileController {
       !req.body.uid ||
       !req.body.token
     ) {
-      response.send(throwError(400, 1031, "Field can not be empty."));
+      response.send(throwError(400, 1020, "Field can not be empty."));
       return;
     }
     if (req.files.avatar.size / 1024 / 1024 >= 2) {

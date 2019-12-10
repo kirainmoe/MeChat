@@ -94,7 +94,7 @@ export default class Model {
     addDialog(uid) {
         this.messageList[uid] = {
             with: uid,
-            nickname: this.uidKeyMap[uid].nickname,
+            nickname: this.uidKeyMap[uid].alias ? this.uidKeyMap[uid].alias : this.uidKeyMap[uid].nickname,
             avatar: this.uidKeyMap[uid].avatar,
             last: Date.parse(new Date()),
             read: false,
@@ -104,6 +104,9 @@ export default class Model {
 
     @action
     replaceDialog(dialog) {
+        for (const i in dialog) 
+            if (this.uidKeyMap[dialog[i].with] && this.uidKeyMap[dialog[i].with].alias)
+                dialog[i].nickname = this.uidKeyMap[dialog[i].with].alias;
         this.messageList = dialog;
     }
 
@@ -164,5 +167,15 @@ export default class Model {
         }
         this.messageList[from].read = false;
         this.messageList[from].records.push(msg);
+    }
+
+    @action
+    updateAlias(target, alias) {
+        this.uidKeyMap[target].alias = alias;
+        for (const i in this.friends) {
+            if (this.friends[i].uid === target) {
+                this.friends[i].alias = alias;
+            }
+        }
     }
 }

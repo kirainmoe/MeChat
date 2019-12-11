@@ -2,43 +2,50 @@ const { throwError, checkField } = require("../utils");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 const UserSchema = require('../schemas/UserSchema'),
-  MessageSchema = require('../schemas/MessageSchema');
+  MessageSchema = require('../schemas/MessageSchema'),
+  GroupSchema = require('../schemas/GroupSchema');
 
 class ChatController {
   udb = null;
   mdb = null;
+  gdb = null;
 
   constructor(mongoose) {
     this.udb = mongoose.model('mc_users', UserSchema);
     this.mdb = mongoose.model('mc_messages', MessageSchema)
+    this.gdb = mongoose.model('mc_groups', GroupSchema);
   }
 
+  // 验证用户身份
   async auth(uid, token) {
     const res = await this.udb
       .findOne({ _id: ObjectId(uid) });
-    if (res === null || res.token != token)
+    if (res === null || res.auth_token !== token)
       return false;
     return true;
   }
 
+  // 接收信息发送请求
   async sendMessage(req, response, userMap) {
     response.header("Content-Type", "application/json");
 
-    if (!checkField(req.body, ["uid", "to", "type", "content", "token"])) {
+    if (!checkField(req.body, ["uid", "to", "type", "content", "token", "target"])) {
       response.send(throwError(400, 1020, "Message field is invalid."));
       return;
     }
-    const { uid, to, type, content, token } = req.body;
+    const { uid, to, type, content, token, target } = req.body;
 
-    if (!this.auth(uid)) {
+    if (!this.auth(uid, token)) {
       response.send(throwError(403, 1010, "Auth token is invalid."));
       return;
     }
     
-    const res = await this.udb.findOne({ _id: ObjectId(to) });
-    if (res == null) {
-      response.send(throwError(403, 1011, "Target not exists."));
-      return;
+    if (target === 'friends') {
+      const res = await this.udb.findOne({ _id: ObjectId(to) });
+      if (res == null) {
+        response.send(throwError(403, 1011, "Target not exists."));
+        return;
+      }
     }
 
     if (type == 'image' && content.length / 1024 / 1024 >= 2) {
@@ -48,7 +55,8 @@ class ChatController {
 
     const ts = new Date();
 
-    if (userMap[to]) {
+
+    if (target == 'friends' && userMap[to]) {
       userMap[to].send(JSON.stringify({
         type: 'message',
         from: uid,
@@ -58,9 +66,40 @@ class ChatController {
           timestamp: Date.parse(ts),
           type,
           content,
+          target,
           read: false
         }
       }));
+    } else if (target == 'group') {
+      const group = await this.gdb.findOne({ _id: ObjectId(to) });
+      if (!group)
+        return;
+      const users = JSON.parse(group.members);
+      const sender = await this.udb.findOne({ _id: ObjectId(uid) });
+      if (!sender)
+        return;
+      const senderId = sender._id.toString();
+      users.forEach(user => {
+        if (user === senderId)
+          return;
+        if (userMap[user]) {
+          userMap[user].send(JSON.stringify({
+            type: 'message',
+            from: to,
+            payload: {
+              from: uid,
+              avatar: sender.avatar,
+              nickname: sender.nickname,
+              to,
+              timestamp: Date.parse(ts),
+              type,
+              content,
+              target,
+              read: false
+            }
+          }));
+        }
+      });
     }
 
     await this.mdb.create({
@@ -69,6 +108,7 @@ class ChatController {
       timestamp: ts,
       type,
       content,
+      target,
       read: false
     });
 
@@ -95,10 +135,14 @@ class ChatController {
     }
 
     let all = {};
-    const hasMap = new Map();
+
+    const user = await this.udb.findOne({ _id: ObjectId(uid) });
+    if (!user)
+      return;
 
     const fromThisUser = await this.mdb.find({
-      from: uid
+      from: uid,
+      target: 'friends'
     })
       .sort({ 'timestamp': -1 })
       .limit(200);
@@ -116,13 +160,14 @@ class ChatController {
           avatar: userInfo.avatar,
           last: Date.parse(item.timestamp),
           read: true,
-          records: []
+          records: [],
+          target: 'friends'
         };
       }
     }
-
     const toThisUser = await this.mdb.find({
-      to: uid
+      to: uid,
+      target: 'friends'
     })
       .sort({ 'timestamp': -1 })
       .limit(200);
@@ -139,24 +184,63 @@ class ChatController {
           avatar: userInfo.avatar,
           last: Date.parse(item.timestamp),
           read: true,
-          records: []
+          records: [],
+          target: 'friends'
         };
       }
     }  
+
+    const groupsList = JSON.parse(user.groups),
+      groupsAll = {};
+    for (const i in groupsList) {
+      const groupId = groupsList[i],
+        group = await this.gdb.findOne({ _id: ObjectId(groupId) });
+
+      const curGroupMembers = {};
+
+      if (!group)
+        continue;
+
+      const groupMessage = await this.mdb.find({ to: groupId, target: 'group' }).limit(200),
+        parsedMessages = [];
+      for (const j in groupMessage) {
+        const item = groupMessage[j], parsedMessage = {
+          from: item.from === uid ? 1 : 0,
+          timestamp: Date.parse(item.timestamp),
+          type: item.type,
+          content: item.content,
+          read: true,
+          target: 'group'
+        };
+
+        if (!curGroupMembers[item.from]) {
+          const thisUser = await this.udb.findOne({ _id: ObjectId(item.from) });
+          if (!thisUser)
+            continue;
+          curGroupMembers[item.from] = thisUser;
+        }
+        parsedMessage.nickname = curGroupMembers[item.from].nickname;
+        parsedMessage.avatar = curGroupMembers[item.from].avatar;        
+        parsedMessages.push(parsedMessage);
+      }
+      if (parsedMessages.length)
+        groupsAll[groupId] = {
+          with: groupId,
+          nickname: group.name,
+          avatar: null,
+          last: parsedMessages[parsedMessages.length - 1].timestamp,
+          read: false,
+          records: parsedMessages,
+          target: 'group'
+        };
+    }
+
     
     for (const id in all) {
       const records = await this.mdb.find({
         $or: [
-          {
-            $and: [
-              {from: uid, to: id}
-            ]
-          },
-          {
-            $and: [
-              {from: id, to: uid}
-            ]
-          }
+          { $and: [ {from: uid, to: id} ] },
+          { $and: [ {from: id, to: uid} ]}
         ]
       })
         .sort({ 'timestamp': -1 })
@@ -170,7 +254,8 @@ class ChatController {
           timestamp: Date.parse(record.timestamp),
           type: record.type,
           content: record.content,
-          read: record.read
+          read: record.read,
+          target: 'friends'
         });
         if (!record.read && record.from == 0) {
           all[id].read = false;
@@ -183,7 +268,10 @@ class ChatController {
 
     response.send(JSON.stringify({
       status: 200,
-      payload: all
+      payload: {
+        ...all,
+        ...groupsAll
+      }
     }));
   }
 }

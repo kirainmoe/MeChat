@@ -7,5 +7,6 @@ module.exports = new Schema({
     timestamp: Date,
     type: String,
     content: String,
-    read: Boolean
+    read: Boolean,
+    target: String
 });

@@ -18,6 +18,10 @@ import FriendsList from "./FriendsList";
 import ProfilePage from "./ProfilePage";
 import ProfileEdit from './ProfileEdit';
 import AboutPage from "./AboutPage";
+import GroupList from './GroupList';
+import CreateNewGroupPage from "./CreateNewGroupPage";
+import GroupPage from "./GroupPage";
+import GroupChatPage from "./GroupChatPage";
 
 @inject("store")
 @observer
@@ -38,6 +42,7 @@ class MainPage extends Component {
       msg = JSON.parse(msg.data);
       switch (msg.type) {
         case 'message':
+          console.log(msg);
           this.props.store.pushNewMessage(msg.from, msg.payload);
           break;
         default:
@@ -52,6 +57,13 @@ class MainPage extends Component {
     });
   }
 
+  forceLogout() {
+    alert("身份认证出现问题，请重新登录。");
+
+    sessionStorage.removeItem('userInfo');
+    this.props.history.push('/');
+  }
+
   componentWillMount() {
     if (sessionStorage.getItem("userInfo") == null)
       this.props.history.push("/");
@@ -64,21 +76,31 @@ class MainPage extends Component {
     this.createSocketConnection();
 
     // get friends list
-    const friendUri = config.apiUrl + 'friends';
+    const friendUri = this.props.store.API('friends');
     honoka.post(friendUri, {
       data: {
         uid: this.props.store.uid,
         token: this.props.store.token
       }
     }).then(res => {
-      if (res.status !== 200) {
-        alert("身份认证出现问题，请重新登录。");
-
-        sessionStorage.removeItem('userInfo');
-        this.props.history.push('/');
-      } else {
+      if (res.status !== 200)
+        this.forceLogout();
+      else
         this.props.store.updateFriends(res.payload);
+    });
+
+    // get groups list
+    const groupUri = this.props.store.API('getUserGroups');
+    honoka.post(groupUri, {
+      data: {
+        uid: this.props.store.uid,
+        token: this.props.store.token
       }
+    }).then(res => {
+      if (res.status !== 200)
+        this.forceLogout();
+      else
+        this.props.store.updateGroups(res.payload);
     });
 
     this.props.store.reloadMessageList();
@@ -107,12 +129,30 @@ class MainPage extends Component {
             <ChatPage />
           </Route>
 
+          <Route path='/app/groupMessage/:id'>
+            <MessageList />
+            <GroupChatPage />
+          </Route>
+
           <Route path='/app/friends'>
             <FriendsList/>
           </Route>
 
           <Route path='/app/friends/:id'>
             <ProfilePage/>
+          </Route>
+
+          <Route path="/app/groups">
+            <GroupList/>
+          </Route>
+
+          <Route path="/app/groups/:id">
+            <GroupPage/>
+          </Route>
+
+          <Route path="/app/createNewGroup">
+            <GroupList/>
+            <CreateNewGroupPage />
           </Route>
 
           <Route path='/app/editProfile'>

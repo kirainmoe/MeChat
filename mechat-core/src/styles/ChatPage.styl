@@ -31,6 +31,17 @@
             width: 80%
             display: flex
             margin: 10px 0px
+            flex-wrap: no-wrap
+            position: relative
+
+            .mechat-chat-group-id
+                width: 100%
+                position: absolute
+                top: 0px 
+                left: 40px
+                margin: 0px;
+                text-align: left
+                font-size: 10px
 
             .mechat-chat-item-avatar
                 display: inline-block
@@ -39,19 +50,24 @@
                     width: 30px
                     height: 30px
                     border-radius: 50%
-            .mechat-chat-item-blob
+            .mechat-chat-item-bubble
                 background: #eee
                 font-size: 14px
-                padding: 5px
+                padding: 8px
                 img
                     width: auto
                     height: auto
                     max-width: 300px
                     max-height: 300px
+                p
+                    margin: 0px
             
             &.from-me
                 margin-left: auto
                 justify-content: flex-end
+                .mechat-chat-group-id
+                    left: -40px
+                    text-align: right
             &.from-me .mechat-chat-item-avatar
                 order: 2
             &.from-me .mechat-chat-item-blob
@@ -89,3 +105,7 @@
             &:hover
                 color: #fff
                 background: rgb(18, 150, 17)
+
+.mechat-group-chat
+    .mechat-chat-item-bubble
+        margin-top: 20px

@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { inject, observer } from "mobx-react";
 
+import Bubble from './subcomponents/Bubble';
+
 import "../styles/ChatPage.styl";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
@@ -10,10 +12,6 @@ import honoka from "honoka";
 @inject("store")
 @observer
 class ChatPage extends Component {
-  getAvatar(avatar) {
-    return config.apiUrl + "avatar/" + avatar;
-  }
-
   componentDidMount() {
     document.onkeydown = e => {
       const keycode = e.which ? e.which : e.keyCode;
@@ -43,6 +41,7 @@ class ChatPage extends Component {
     }
 
     rawChats.forEach(chat => {
+      // 处理信息接收时间间隔
       if (chat.timestamp - lastTime >= 1000000) {
         const date = new Date(chat.timestamp);
         let dateStr = "";
@@ -59,28 +58,7 @@ class ChatPage extends Component {
         lastTime = chat.timestamp;
       }
       chats.push(
-        <div
-          className={"mechat-chat-item" + (chat.from === 1 ? " from-me" : "")}
-          key={cnt++}
-        >
-          <div className="mechat-chat-item-avatar">
-            <img
-              src={
-                chat.from === 0
-                  ? this.getAvatar(this.props.store.chattingWith.avatar)
-                  : myAvatar
-              }
-              alt="avatar"
-            />
-          </div>
-          <div className="mechat-chat-item-blob">
-            {chat.type === "string" ? (
-              chat.content
-            ) : (
-              <img src={chat.content} alt="image" />
-            )}
-          </div>
-        </div>
+        <Bubble chat={chat} chatWith={this.props.store.chattingWith} myAvatar={myAvatar} key={cnt++}/>
       );
     });
     return chats;
@@ -105,7 +83,8 @@ class ChatPage extends Component {
           to: uid,
           type: "string",
           content: text,
-          token: this.props.store.token
+          token: this.props.store.token,
+          target: 'friends'
         }
       })
       .then(res => {
@@ -164,9 +143,13 @@ class ChatPage extends Component {
   }
 
   render() {
-    setTimeout(() => {
+    const interval = setInterval(() => {
+      if (!this.chatContent)
+        return;
       this.changeScrollTop();
+      clearInterval(interval);
     }, 50);
+
     return (
       <div className="mechat-chat-page" onPaste={e => this.onClipboardPaste(e)}>
         <div className="mechat-chat-title">

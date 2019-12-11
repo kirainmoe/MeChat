@@ -235,7 +235,8 @@ class ProfileController {
             avatar: String(fileName + fileType)
         }
     });
-    fs.unlinkSync(config.avatarPath + res.avatar);
+    if (res.avatar != 'defaultAvatar.jpg')
+      fs.unlinkSync(config.avatarPath + res.avatar);
     response.send(JSON.stringify({
         status: 200,
         avatar: uid + fileType,

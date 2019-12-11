@@ -3,26 +3,29 @@ import { inject, observer } from 'mobx-react';
 import { NavLink } from 'react-router-dom';
 import honoka from 'honoka';
 
-import '../styles/FriendsList.styl';
 import config from '../config';
+import '../styles/GroupList.styl';
+
+const groupAvatar = require('../images/group.png');
 
 @inject('store')
 @observer
-class FriendsList extends Component {
-  renderFriendsList() {
+class GroupList extends Component {
+  renderGroupsList() {
     const res = [];
     let cnt = 0;
-    this.props.store.friends.forEach(friend => {
+    this.props.store.groups.forEach(group => {
+        console.log(group);
       res.push(
-        <NavLink className="mechat-dialog" to={"/app/friends/" + friend.uid} key={cnt++}>
+        <NavLink className="mechat-dialog" to={"/app/groups/" + group.id} key={cnt++}>
           <div className="mechat-dialog-avatar">
-            <img src={config.apiUrl + 'avatar/' + friend.avatar} alt="avatar" />
+            <img src={groupAvatar} alt="avatar" />
           </div>
           <div className="mechat-dialog-meta">
             <p className="mechat-dialog-title">
-              {friend.alias ? `${friend.alias} (${friend.nickname})` : friend.nickname}
+              {group.name}
             </p>
-            <p className="mechat-dialog-mess">{friend.signature}</p>
+            <p className="mechat-dialog-mess">{group.description}</p>
           </div>
         </NavLink>
       );
@@ -38,19 +41,20 @@ class FriendsList extends Component {
   }  
 
   componentWillMount() {
-    // get friends list
-    const friendUri = config.apiUrl + 'friends';
-    honoka.post(friendUri, {
+    // get groups list
+    const groupUri = this.props.store.API('getUserGroups');
+    honoka.post(groupUri, {
       data: {
         uid: this.props.store.uid,
         token: this.props.store.token
       }
     }).then(res => {
+        console.log(res.payload);
       if (res.status !== 200)
         this.forceLogout();
       else
-        this.props.store.updateFriends(res.payload);
-    });    
+        this.props.store.updateGroups(res.payload);
+    });
   }
   
   addFriend() {
@@ -81,20 +85,22 @@ class FriendsList extends Component {
 
   render() {
     return (
-      <div className="mechat-messages">
+      <div className="mechat-messages mechat-grouplist">
         <h1 className="mechat-messages-title">
-          朋友
+          群组
         </h1>
         <div className="mechat-friends-add">
-          <input type="text" name="friends" placeholder="搜索 MeChat 账号添加好友" ref={ref => this.input = ref}/>
-          <button onClick={() => this.addFriend()}>+</button>
+          <input type="text" name="friends" placeholder="搜索群 ID 加入群" ref={ref => this.input = ref}/>
         </div>
         <div className="mechat-messages-list">
-          {(() => this.renderFriendsList())()}  
-        </div>         
+          {(() => this.renderGroupsList())()}  
+          <NavLink to={'/app/createNewGroup'} className="mechat-group-create" title="发起新的群聊">
+              <i className="fa fa-plus"></i>
+          </NavLink>
+        </div>
       </div>
     );
   }
 }
 
-export default FriendsList;
+export default GroupList;

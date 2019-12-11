@@ -1,0 +1,39 @@
+.mechat-create-new-group
+    width: calc(100% - 310px)
+    height: 100%
+    .mechat-cng-title
+        height: 40px
+        font-size: 14px
+        line-height: 40px
+        margin: 0px
+        text-align: center
+    .mechat-cng-container
+        width: 60%
+        margin: 0 auto
+
+        .mechat-cng-input
+            input
+                margin: 0px 10px
+                padding: 8px
+                outline: 0
+        .mechat-cng-member-item
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        .mechat-cng-members-wrapper
+            width: 100%
+            height: 300px
+            padding: 20px
+            background: lighten(#eee, 50%)
+            overflow-y: auto
+        .mechat-cng-button
+            background: rgb(26, 173, 25)
+            border: 0px
+            padding: 6px
+            display: block
+            margin: 20px auto 
+            color: #fff
+            transition: .3s all
+            cursor: pointer
+            &:hover
+                background: lighten(rgb(26, 173, 25), 10%)

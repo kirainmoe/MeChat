@@ -1,6 +1,7 @@
 const UserController = require('./UserController');
 const ProfileController = require('./ProfileController');
 const CharController = require('./ChatController');
+const GroupController = require('./GroupController');
 
 const connectionMap = new Map();
 
@@ -11,6 +12,7 @@ const registerRouter = (app, db) => {
     const user = new UserController(db);
     const profile = new ProfileController(db);
     const chat = new CharController(db);
+    const group = new GroupController(db);
 
     const udb = db.model('mc_users', UserSchema);
 
@@ -28,40 +30,24 @@ const registerRouter = (app, db) => {
     });
 
     // login & register
-    app.post('/register', (req, res) => {
-        user.register(req, res);
-    });
-    app.post('/login', (req, res) => {
-        user.login(req, res);
-    });
+    app.post('/register', (req, res) => user.register(req, res));
+    app.post('/login', (req, res) => user.login(req, res));
 
     // user info
-    app.get('/avatar', (req, res) => {
-        user.getUserAvatar(req, res);
-    });
-    app.post('/friends', (req, res) => {
-        profile.getFriends(req, res);
-    });
-    app.post('/addFriend', (req, res) => {
-        profile.addFriends(req, res);
-    });
-    app.post('/updateProfile', (req, res) => {
-        profile.updateProfile(req, res);
-    });
-    app.post('/uploadAvatar', (req, res) => {
-        profile.uploadAvatar(req, res);
-    });
-    app.post('/changeAlias', (req, res) => {
-        profile.changeAlias(req, res);
-    })
+    app.get('/avatar', (req, res) => user.getUserAvatar(req, res));
+    app.post('/friends', (req, res) => profile.getFriends(req, res));
+    app.post('/addFriend', (req, res) => profile.addFriends(req, res));
+    app.post('/updateProfile', (req, res) => profile.updateProfile(req, res));
+    app.post('/uploadAvatar', (req, res) => profile.uploadAvatar(req, res));
+    app.post('/changeAlias', (req, res) => profile.changeAlias(req, res));
 
     // message interface
-    app.post('/sendMessage', (req, res) => {
-        chat.sendMessage(req, res, connectionMap);
-    });
-    app.post('/getMessageList', (req, res) => {
-        chat.getMessageList(req, res);
-    })
+    app.post('/sendMessage', (req, res) => chat.sendMessage(req, res, connectionMap));
+    app.post('/getMessageList', (req, res) => chat.getMessageList(req, res));
+
+    // group
+    app.post('/createGroup', (req, res) => group.createGroup(req, res));
+    app.post('/getUserGroups', (req, res) => group.getUserGroups(req, res));
 
     // websocket
     app.ws('/entry', async (ws, req) => {

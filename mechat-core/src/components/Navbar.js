@@ -29,6 +29,9 @@ class Navbar extends Component {
               <NavLink to="/app/friends" title="通讯录">
                 <i className="fa fa-address-book-o"></i>
               </NavLink>
+              <NavLink to="/app/groups" title="群组">
+                <i className="fa fa-group"></i>
+              </NavLink>              
               <div className="mechat-nav-system-action">
                 <Link to="/app/about" title="关于">
                   <i className="fa fa-info-circle"></i>

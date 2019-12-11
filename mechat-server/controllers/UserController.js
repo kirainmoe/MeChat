@@ -49,7 +49,7 @@ class UserController {
                 createTime: new Date(),
                 online: 0,
                 auth_token: '',
-                friends: '[]',
+                friends: '{}',
                 groups: '[]',
                 avatar: 'defaultAvatar.jpg'
         });

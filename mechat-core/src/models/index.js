@@ -3,6 +3,8 @@ import { observable, action, get } from 'mobx';
 import config from '../config';
 import honoka from 'honoka';
 
+const groupAvatar = require('../images/group.png');
+
 export default class Model {
     @observable nickname = null;
     @observable username = null;
@@ -19,12 +21,14 @@ export default class Model {
     @observable currentDialog = null;
     @observable chattingWith = {
         uid: null,
-        nickanme: null,
+        nickname: null,
         avatar: null
     };
     @observable uidKeyMap = {};
+    @observable groupKeyMap = {};
     @observable fetching = false;
 
+    // Global config url
     @observable configUrl = {
         httpUrl: config.apiUrl,
         wsUrl: config.wsUrl
@@ -50,6 +54,7 @@ export default class Model {
 
     @action
     setUserInfo(user) {
+        console.log(user);
         this.nickname = user.nickname;
         this.username = user.username;
         this.signature = user.signature;
@@ -74,6 +79,12 @@ export default class Model {
     }
 
     @action
+    addGroup(group) {
+        this.groups.push(group);
+        this.groupKeyMap[group.id] = group;
+    }
+
+    @action
     updateFriends(friends) {
         this.friends = friends;
         friends.forEach(friend => {
@@ -86,20 +97,43 @@ export default class Model {
     }
 
     @action
+    updateGroups(groups) {
+        this.groups = groups;
+        groups.forEach(group => {
+            this.groupKeyMap[group.id] = group;
+            if (this.messageList[group.id])
+                this.messageList[group.id].nickname = group.name;
+        });
+    }
+
+    @action
     connectSocketLink(socket) {
         this.socketLink = socket;
     }
 
     @action
-    addDialog(uid) {
-        this.messageList[uid] = {
-            with: uid,
-            nickname: this.uidKeyMap[uid].alias ? this.uidKeyMap[uid].alias : this.uidKeyMap[uid].nickname,
-            avatar: this.uidKeyMap[uid].avatar,
-            last: Date.parse(new Date()),
-            read: false,
-            records: []
-        };
+    addDialog(uid, isGroup) {
+        if (!isGroup)
+            this.messageList[uid] = {
+                with: uid,
+                nickname: this.uidKeyMap[uid].alias ? this.uidKeyMap[uid].alias : this.uidKeyMap[uid].nickname,
+                avatar: this.uidKeyMap[uid].avatar,
+                last: Date.parse(new Date()),
+                read: true,
+                records: [],
+                target: 'friend'
+            };
+        else {
+            this.messageList[uid] = {
+                with: uid,
+                nickname: this.groupKeyMap[uid].name,
+                avatar: groupAvatar,
+                last: Date.parse(new Date()),
+                read: true,
+                records: [],
+                target: 'group'
+            };
+        }
     }
 
     @action
@@ -115,22 +149,28 @@ export default class Model {
         this.chattingWith = {
             uid,
             nickname,
-            avatar
+            avatar: this.API('avatar/') + avatar
         };
     }
 
     @action
-    sendMessage(uid, content, type) {
+    sendMessage(uid, content, type, isGroup) {
         if (!this.messageList[uid]) {
             this.addDialog(uid);
         }
         const timestamp = Date.parse(new Date());
-        this.messageList[uid].records.push({
+        let msg = {
             from: 1,
             timestamp: timestamp,
             type,
-            content
-        });
+            content,
+            target: isGroup ? 'group' : 'friends'
+        };
+        if (isGroup) {
+            msg.avatar = this.avatar;
+            msg.nickname = this.nickname;
+        }
+        this.messageList[uid].records.push(msg);
         this.messageList[uid].last = timestamp;
         // todo: sort message list
     }
@@ -154,6 +194,7 @@ export default class Model {
             alert("拉取消息列表失败 :(");
             return;
           }
+          console.log(res.payload, 233);
           this.replaceDialog(res.payload);
           this.fetching = false;
         });
@@ -161,12 +202,13 @@ export default class Model {
 
     @action
     pushNewMessage(from, msg) {
-        console.log(from, this.messageList, this.uidKeyMap);
         if (!this.messageList[from]) {
-            this.addDialog(from);
+            this.addDialog(from, msg.target == 'group');
+            console.log(from, msg, 233);
         }
         this.messageList[from].read = false;
         this.messageList[from].records.push(msg);
+        this.messageList[from].last = msg.timestamp;
     }
 
     @action

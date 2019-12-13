@@ -1,4 +1,4 @@
-# MeChat
+<h1 align=center><img width="80px" src="https://i.loli.net/2019/12/13/apDtvOrXb4YBhkC.png"><br>MeChat</h1>
 
 MeChat：一个简单的、跨平台的电脑版聊天程序。
 

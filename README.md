@@ -4,6 +4,8 @@ MeChat：一个简单的、跨平台的电脑版聊天程序。
 
 这是厦门大学信息学院 2018 级计算机系数据结构课程设计：**题目七《实现电脑版的微信》**。
 
+![TIM截图20191213180250.png](https://i.loli.net/2019/12/13/6sXbIYe1pS9gLAJ.png)
+
 ## Demo
 
 可以在 [Release](https://github.com/kirainmoe/mechat/releases) 页面下载。

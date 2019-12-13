@@ -9,7 +9,7 @@ import honoka from "honoka";
 
 @inject("store")
 @observer
-class ProfilePage extends Component {  
+class ProfilePage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -18,11 +18,10 @@ class ProfilePage extends Component {
   }
 
   chatWith(uid, nickname, avatar) {
-      if (!this.props.store.messageList[uid])
-        this.props.store.addDialog(uid);
-      this.props.store.setChattingWith(uid, nickname, avatar);
+    if (!this.props.store.messageList[uid]) this.props.store.addDialog(uid);
+    this.props.store.setChattingWith(uid, nickname, avatar);
   }
-  
+
   getAvatar(avatar) {
     return config.apiUrl + "avatar/" + avatar;
   }
@@ -33,28 +32,56 @@ class ProfilePage extends Component {
     });
   }
 
+  forceLogout() {
+    alert("身份验证失败，请重新登录。");
+
+    sessionStorage.removeItem("userInfo");
+    this.props.history.push("/");
+  }
+
   confirmChange() {
     const target = this.props.match.params.id,
       alias = this.aliasInput.value;
-    honoka.post(this.props.store.API('changeAlias'), {
+    honoka
+      .post(this.props.store.API("changeAlias"), {
+        data: {
+          uid: this.props.store.uid,
+          token: this.props.store.token,
+          target,
+          alias
+        }
+      })
+      .then(res => {
+        if (res.status === 403)
+          this.forceLogout();
+        else {
+          if (res.status === 200) {
+            this.props.store.updateAlias(target, alias);
+            this.setState({
+              modifyAlias: false
+            });
+          }
+        }
+      });
+  }
+
+  deleteFriend() {
+    const uid = this.props.store.uid,
+      token = this.props.store.token,
+      target = this.props.match.params.id;
+    honoka.post(this.props.store.API('deleteFriend'), {
       data: {
-        uid: this.props.store.uid,
-        token: this.props.store.token,
-        target,
-        alias
+        uid,
+        token,
+        target
       }
     }).then(res => {
-      if (res.status === 403) {
-        alert("身份验证失败，请重新登录。");
-
-        sessionStorage.removeItem("userInfo");
-        this.props.history.push("/");
-      } else {
+      if (res.status === 403)
+        this.forceLogout();
+      else {
         if (res.status === 200) {
-          this.props.store.updateAlias(target, alias);
-          this.setState({
-            modifyAlias: false
-          });
+          alert('删除好友成功。');
+          this.props.store.deleteFriend(target);
         }
       }
     });
@@ -62,12 +89,10 @@ class ProfilePage extends Component {
 
   render() {
     const uid = this.props.match.params.id;
-    let user;
-    if (!this.props.store.uidKeyMap[uid]) {
+    let user = this.props.store.uidKeyMap[uid];
+    if (!user)
+      return null;
 
-    } else {
-        user = this.props.store.uidKeyMap[uid];
-    }
     return (
       <div className="mechat-profile-page">
         <p className="mechat-profile-title">个人资料</p>
@@ -78,28 +103,55 @@ class ProfilePage extends Component {
           <div className="mechat-profile-meta">
             <h1 className="mechat-profile-nickname">{user.nickname}</h1>
             <p className="mechat-profile-alias">
-              备注：{user.alias ? user.alias : '无'}
-              <span className="mechat-profile-alias-change" onClick={() => this.changeAlias()}>
+              备注：{user.alias ? user.alias : "无"}
+              <span
+                className="mechat-profile-alias-change"
+                onClick={() => this.changeAlias()}
+              >
                 修改备注
               </span>
             </p>
-            <p className="mechat-profile-alias-input" style={{
-              display: this.state.modifyAlias ? 'block' : 'none'
-            }}>
-              <input type="text" defaultValue={user.alias} ref={ref => this.aliasInput = ref} />
-              <button className="mechat-profile-alias-confirm" onClick={() => this.confirmChange()}>确定</button>
+            <p
+              className="mechat-profile-alias-input"
+              style={{
+                display: this.state.modifyAlias ? "block" : "none"
+              }}
+            >
+              <input
+                type="text"
+                defaultValue={user.alias}
+                ref={ref => (this.aliasInput = ref)}
+              />
+              <button
+                className="mechat-profile-alias-confirm"
+                onClick={() => this.confirmChange()}
+              >
+                确定
+              </button>
             </p>
-            <p className="mechat-profile-account">MeChat 账号：{user.username}</p>
+            <p className="mechat-profile-account">
+              MeChat 账号：{user.username}
+            </p>
 
-            <p className="mechat-profile-signature">签名：{user.signature ? user.signature : '无'}</p>
+            <p className="mechat-profile-signature">
+              签名：{user.signature ? user.signature : "无"}
+            </p>
 
             <Link
               className="mechat-profile-chat"
               to={"/app/message/" + user.uid}
-              onClick={() => this.chatWith(user.uid, user.nickname, user.avatar)}
+              onClick={() =>
+                this.chatWith(user.uid, user.nickname, user.avatar)
+              }
             >
               聊天
             </Link>
+            <button
+              className="mechat-profile-exit"
+              onClick={() => this.deleteFriend()}
+            >
+              删除好友
+            </button>
           </div>
         </div>
       </div>

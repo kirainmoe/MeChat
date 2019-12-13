@@ -37,6 +37,7 @@ const registerRouter = (app, db) => {
     app.get('/avatar', (req, res) => user.getUserAvatar(req, res));
     app.post('/friends', (req, res) => profile.getFriends(req, res));
     app.post('/addFriend', (req, res) => profile.addFriends(req, res));
+    app.post('/deleteFriend', (req, res) => profile.deleteFriend(req, res));
     app.post('/updateProfile', (req, res) => profile.updateProfile(req, res));
     app.post('/uploadAvatar', (req, res) => profile.uploadAvatar(req, res));
     app.post('/changeAlias', (req, res) => profile.changeAlias(req, res));
@@ -48,6 +49,9 @@ const registerRouter = (app, db) => {
     // group
     app.post('/createGroup', (req, res) => group.createGroup(req, res));
     app.post('/getUserGroups', (req, res) => group.getUserGroups(req, res));
+    app.post('/addGroup', (req, res) => group.addGroup(req, res));
+    app.post('/inviteToGroup', (req, res) => group.inviteToGroup(req, res));
+    app.post('/exitGroup', (req, res) => group.exitGroup(req, res));
 
     // websocket
     app.ws('/entry', async (ws, req) => {

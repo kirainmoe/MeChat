@@ -29,15 +29,15 @@ class MessageList extends Component {
     });
     for (const key in rawList) {
       const item = rawList[key],
-        date = new Date(item.last),
-        today = new Date();
+        date = new Date(item.last);
+        // today = new Date();
       
       let dateStr = '';
-      if (date.getMonth() === today.getMonth() && date.getDate() === today.getDate()) {
-        dateStr += (date.getHours() < 10 ? '0' + date.getHours() : date.getHours());
-        dateStr += ':';
-        dateStr +=(date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
-      } 
+      // if (date.getMonth() === today.getMonth() && date.getDate() === today.getDate()) {
+      dateStr += (date.getHours() < 10 ? '0' + date.getHours() : date.getHours());
+      dateStr += ':';
+      dateStr +=(date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
+      // } 
 
       res.push(
         <NavLink className="mechat-dialog" to={item.target !== 'group' ? `/app/message/${item.with}` : `/app/groupMessage/${item.with}`} key={cnt++} onClick={() => this.chatWith(item)}>

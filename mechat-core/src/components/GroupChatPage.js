@@ -5,13 +5,19 @@ import Bubble from "./subcomponents/Bubble";
 
 import "../styles/GroupChatPage.styl";
 import { withRouter } from "react-router";
-import { Link } from "react-router-dom";
 import config from "../config";
 import honoka from "honoka";
 
 @inject("store")
 @observer
 class GroupChatPage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      inviting: false
+    };
+  }
+
   componentDidMount() {
     document.onkeydown = e => {
       const keycode = e.which ? e.which : e.keyCode;
@@ -27,6 +33,14 @@ class GroupChatPage extends Component {
   componentWillUnmount() {
     document.onkeydown = null;
     window.browserWindow.getCurrentWindow().setSize(800, 600);
+  }
+
+  onClipboardPaste(e) {
+    const item = e.clipboardData.items;
+    if (!item.length) return;
+    const blob = item[0].getAsFile();
+    if (!blob || !blob.type || !blob.type.indexOf("image") === -1) return;
+    this.sendImage(blob);
   }
 
   renderChatContent() {
@@ -96,7 +110,6 @@ class GroupChatPage extends Component {
         }
       })
       .then(res => {
-        console.log(res);
         if (res.status !== 200) {
           alert("发送信息失败，原因可能是：" + res.message);
           console.log(res);
@@ -130,7 +143,7 @@ class GroupChatPage extends Component {
             type: "image",
             content: base64Content,
             token: this.props.store.token,
-            target: 'group'
+            target: "group"
           }
         })
         .then(res => {
@@ -143,12 +156,45 @@ class GroupChatPage extends Component {
     };
   }
 
-  onClipboardPaste(e) {
-    const item = e.clipboardData.items;
-    if (!item.length) return;
-    const blob = item[0].getAsFile();
-    if (!blob || !blob.type || !blob.type.indexOf("image") === -1) return;
-    this.sendImage(blob);
+  doInvite() {
+    const uid = this.props.store.uid,
+      token = this.props.store.token,
+      target = this.inviteInput.value;
+    honoka.post(this.props.store.API('inviteToGroup'), {
+      data: {
+        uid,
+        token,
+        groupId: this.props.match.params.id,
+        target
+      }
+    }).then(res => {
+      if (res.status === 200) {
+        alert('邀请成功！');
+        this.props.store.reloadGroupList();
+        this.setState({ inviting: false });
+      }
+    })
+  }
+
+  renderMembers() {
+    if (!this.props.store.groupKeyMap[this.props.match.params.id]) return null;
+    const rawMembers = this.props.store.groupKeyMap[this.props.match.params.id]
+        .members,
+      members = [];
+
+    let cnt = 0;
+    rawMembers.forEach(member => {
+      members.push(
+        <div className="mechat-group-members-item" key={cnt++}>
+          <img
+            src={this.props.store.API("avatar/") + member.avatar}
+            alt="avatar"
+          />
+          <span>{member.nickname}</span>
+        </div>
+      );
+    });
+    return members;
   }
 
   render() {
@@ -202,28 +248,29 @@ class GroupChatPage extends Component {
           </div>
         </div>
         <div className="mechat-group-members">
-          <div className="mechat-chat-title">群成员</div>
+          <div className="mechat-chat-title">
+            群成员
+            <span
+              className="fa fa-plus invite-button"
+              title="邀请新成员"
+              onClick={() => this.setState({ inviting: true })}
+            ></span>
+          </div>
 
           <div className="mechat-group-members-list">
-            {(() => {
-              const rawMembers = this.props.store.groupKeyMap[
-                  this.props.match.params.id
-                ].members,
-                members = [];
-              let cnt = 0;
-              rawMembers.forEach(member => {
-                members.push(
-                  <div className="mechat-group-members-item" key={cnt++}>
-                    <img
-                      src={this.props.store.API("avatar/") + member.avatar}
-                      alt="avatar"
-                    />
-                    <span>{member.nickname}</span>
-                  </div>
-                );
-              });
-              return members;
-            })()}
+            {this.renderMembers()}
+            <div className="mechat-group-members-invite" style={{
+              display: this.state.inviting ? 'block' : 'none'
+            }}>
+              <input
+                type="text"
+                placeholder="输入用户名来邀请用户入群！"
+                ref={ref => (this.inviteInput = ref)}
+              />
+              <button type="button" onClick={() => this.doInvite()}>
+                邀请
+              </button>
+            </div>
           </div>
         </div>
       </div>

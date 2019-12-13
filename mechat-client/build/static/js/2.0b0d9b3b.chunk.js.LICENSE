@@ -14,17 +14,17 @@ and limitations under the License.
 ***************************************************************************** */
 
 /*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <http://feross.org>
- * @license  MIT
- */
-
-/*!
  * honoka v0.4.18
  * (c) 2018 kokororin
  * Released under the MIT License.
  * https://github.com/kokororin/honoka#readme
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <http://feross.org>
+ * @license  MIT
  */
 
 /*

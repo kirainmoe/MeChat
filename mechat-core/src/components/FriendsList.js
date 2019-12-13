@@ -38,24 +38,12 @@ class FriendsList extends Component {
   }  
 
   componentWillMount() {
-    // get friends list
-    const friendUri = config.apiUrl + 'friends';
-    honoka.post(friendUri, {
-      data: {
-        uid: this.props.store.uid,
-        token: this.props.store.token
-      }
-    }).then(res => {
-      if (res.status !== 200)
-        this.forceLogout();
-      else
-        this.props.store.updateFriends(res.payload);
-    });    
+    this.props.store.reloadFriendsList();
   }
   
   addFriend() {
     const friend = this.input.value,
-      addFriendUrl = config.apiUrl + 'addFriend';
+      addFriendUrl = this.props.store.API('addFriend');
       honoka.post(addFriendUrl, {
         data: {
           uid: this.props.store.uid,

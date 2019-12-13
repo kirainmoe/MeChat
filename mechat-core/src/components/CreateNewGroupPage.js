@@ -55,7 +55,7 @@ class CreateNewGroupPage extends Component {
             members: JSON.stringify(members)
         }
     }).then(res => {
-        if (res.status != 200) {
+        if (res.status !== 200) {
             alert(`创建群失败，原因可能是：${res.message}`);
             console.log(res);
         } else {

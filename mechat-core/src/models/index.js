@@ -194,7 +194,6 @@ export default class Model {
             alert("拉取消息列表失败 :(");
             return;
           }
-          console.log(res.payload, 233);
           this.replaceDialog(res.payload);
           this.fetching = false;
         });
@@ -203,7 +202,7 @@ export default class Model {
     @action
     pushNewMessage(from, msg) {
         if (!this.messageList[from]) {
-            this.addDialog(from, msg.target == 'group');
+            this.addDialog(from, msg.target === 'group');
             console.log(from, msg, 233);
         }
         this.messageList[from].read = false;
@@ -219,5 +218,57 @@ export default class Model {
                 this.friends[i].alias = alias;
             }
         }
+    }
+
+    @action
+    exitGroup(groupId) {
+        delete this.groupKeyMap[groupId];
+        for (const i in this.groups)
+            if (this.groups[i].id === groupId) {
+                this.groups[i] = undefined;
+                delete this.groups[i];
+            }
+        delete this.messageList[groupId];
+    }
+
+    @action
+    deleteFriend(target) {
+        delete this.uidKeyMap[target];
+        for (const i in this.friends) {
+            if (this.friends[i].uid === target) {
+                this.friends[i] = undefined;
+                delete this.friends[i];
+            }
+        }
+        delete this.messageList[target];
+    }
+
+    @action
+    reloadFriendsList() {
+        // get friends list
+        honoka.post(this.API('friends'), {
+            data: {
+                uid: this.uid,
+                token: this.token
+            }
+        }).then(res => {
+            if (res.status === 200)
+                this.updateFriends(res.payload);
+        });    
+    }
+
+    @action
+    reloadGroupList() {
+        // get groups list
+        const groupUri = this.API('getUserGroups');
+        honoka.post(groupUri, {
+            data: {
+                uid: this.uid,
+                token: this.token
+            }
+        }).then(res => {
+            if (res.status === 200)
+                this.updateGroups(res.payload);
+        });
     }
 }

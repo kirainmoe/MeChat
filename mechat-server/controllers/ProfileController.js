@@ -131,6 +131,46 @@ class ProfileController {
     );
   }
 
+  // 删除好友
+  async deleteFriend(req, response) {
+    response.header("Content-Type", "application/json");
+    if (!checkField(req.body, ['uid', 'token', 'target'])) {
+      response.send(throwError(403, 1020, 'Field is invalid'));
+      return;
+    }
+    const { uid, token, target } = req.body;
+    if (!this.auth(uid, token)) {
+      response.send(throwError(403, 1010, "Auth token is invalid."));
+      return;
+    }
+
+    const user1 = await this.db.findOne({ _id: ObjectId(uid) }),
+      user2 = await this.db.findOne({ _id: ObjectId(target) });
+
+    if (!user1 || !user2)
+      return;
+    
+    const user1Friends = JSON.parse(user1.friends),
+      user2Friends = JSON.parse(user2.friends);
+    delete user1Friends[target];
+    delete user2Friends[uid];
+
+    await this.db.findOneAndUpdate({ _id: ObjectId(uid) }, {
+      $set: {
+        friends: JSON.stringify(user1Friends)
+      }
+    });
+    await this.db.findOneAndUpdate({ _id: ObjectId(target) }, {
+      $set: {
+        friends: JSON.stringify(user2Friends)
+      }
+    });
+    response.send(JSON.stringify({
+      status: 200,
+      message: 'friends deleted'
+    }));
+  }
+
   // 修改个人资料
   async updateProfile(req, response) {
     const { uid, token, nickname, signature, mail } = req.body;

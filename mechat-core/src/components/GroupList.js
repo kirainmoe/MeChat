@@ -3,7 +3,6 @@ import { inject, observer } from 'mobx-react';
 import { NavLink } from 'react-router-dom';
 import honoka from 'honoka';
 
-import config from '../config';
 import '../styles/GroupList.styl';
 
 const groupAvatar = require('../images/group.png');
@@ -15,7 +14,8 @@ class GroupList extends Component {
     const res = [];
     let cnt = 0;
     this.props.store.groups.forEach(group => {
-        console.log(group);
+      if (!group)
+        return;
       res.push(
         <NavLink className="mechat-dialog" to={"/app/groups/" + group.id} key={cnt++}>
           <div className="mechat-dialog-avatar">
@@ -35,36 +35,22 @@ class GroupList extends Component {
 
   forceLogout() {
     alert("身份认证出现问题，请重新登录。");
-
     sessionStorage.removeItem('userInfo');
     this.props.history.push('/');
   }  
 
   componentWillMount() {
-    // get groups list
-    const groupUri = this.props.store.API('getUserGroups');
-    honoka.post(groupUri, {
-      data: {
-        uid: this.props.store.uid,
-        token: this.props.store.token
-      }
-    }).then(res => {
-        console.log(res.payload);
-      if (res.status !== 200)
-        this.forceLogout();
-      else
-        this.props.store.updateGroups(res.payload);
-    });
+    this.props.store.reloadGroupList();
   }
   
-  addFriend() {
-    const friend = this.input.value,
-      addFriendUrl = config.apiUrl + 'addFriend';
-      honoka.post(addFriendUrl, {
+  addGroup() {
+    const groupId = this.input.value,
+      addGroupUrl = this.props.store.API('addGroup');
+      honoka.post(addGroupUrl, {
         data: {
           uid: this.props.store.uid,
           token: this.props.store.token,
-          friend
+          groupId
         }
       }).then(res => {
         if (res.status === 403) {
@@ -73,11 +59,12 @@ class GroupList extends Component {
           sessionStorage.removeItem('userInfo');
           this.props.history.push('/');
         } else {
+          console.log(res.payload, this.props.store.groups);
           if (res.status === 200) {
-            alert("添加好友成功.");
-            this.props.store.addFriend(res.payload);
+            alert("添加群成功。");
+            this.props.store.addGroup(res.payload);
           } else {
-            alert("添加好友失败，原因是：" + res.message);
+            alert("添加群失败，原因是：" + res.message);
           }
         }
       }); 
@@ -91,6 +78,7 @@ class GroupList extends Component {
         </h1>
         <div className="mechat-friends-add">
           <input type="text" name="friends" placeholder="搜索群 ID 加入群" ref={ref => this.input = ref}/>
+          <button onClick={() => this.addGroup()}>+</button>
         </div>
         <div className="mechat-messages-list">
           {(() => this.renderGroupsList())()}  

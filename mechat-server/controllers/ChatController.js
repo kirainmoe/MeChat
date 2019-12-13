@@ -78,6 +78,11 @@ class ChatController {
       const sender = await this.udb.findOne({ _id: ObjectId(uid) });
       if (!sender)
         return;
+      const groupMembers = JSON.parse(group.members);
+      if (groupMembers.indexOf(uid) < 0) {
+        response.send(throwError(403, 1034, 'You are not in the group.'));
+        return;
+      }
       const senderId = sender._id.toString();
       users.forEach(user => {
         if (user === senderId)

@@ -120,7 +120,8 @@ class ChatPage extends Component {
           to: uid,
           type: "image",
           content: base64Content,
-          token: this.props.store.token
+          token: this.props.store.token,
+          target: 'friends'
         }
       }).then(res => {
         if (res.status !== 200) {

@@ -18,6 +18,10 @@ import Model from './models';
 // eslint-disable-next-line
 eval('window.browserWindow = require("electron").remote');
 
+// macOS headless frame dragging compalibity
+if (navigator.userAgent.indexOf('macOS') !== -1)
+    document.body.setAttribute('style', '-webkit-app-region: drag');
+
 const history = createBrowserHistory(),
     store = new Model();
 

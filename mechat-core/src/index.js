@@ -19,7 +19,7 @@ import Model from './models';
 eval('window.browserWindow = require("electron").remote');
 
 // macOS headless frame dragging compalibity
-if (navigator.userAgent.indexOf('macOS') !== -1)
+if (navigator.userAgent.indexOf('Macintosh') !== -1)
     document.body.setAttribute('style', '-webkit-app-region: drag');
 
 const history = createBrowserHistory(),

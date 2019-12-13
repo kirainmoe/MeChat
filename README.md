@@ -115,6 +115,20 @@ npm run pack:macos       # 打包 macOS 程序
 - honoka
 
 
+## Screenshot
+
+![TIM截图20191213180045.png](https://i.loli.net/2019/12/13/2dgbEzsk9TNcyKW.png)
+
+![TIM截图20191213180108.png](https://i.loli.net/2019/12/13/Xvc7znoxTrwHOIj.png)
+
+![TIM截图20191213180129.png](https://i.loli.net/2019/12/13/3qGhftY6CnTiKvg.png)
+
+![TIM截图20191213180250.png](https://i.loli.net/2019/12/13/6sXbIYe1pS9gLAJ.png)
+
+![TIM截图20191213180206.png](https://i.loli.net/2019/12/13/BAWaHjxM9Rzl28C.png)
+
+![TIM截图20191213180258.png](https://i.loli.net/2019/12/13/VQvD7bwU2GaJqxu.png)
+
 ## Copyright & License
 
 &copy;2019 [Yume Maruyama (Yuhang Qiu)](https://github.com/kirainmoe).

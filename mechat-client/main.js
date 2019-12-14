@@ -9,16 +9,12 @@ const createWindow = () => {
       },
       frame: false
     });
-  
-    // win.loadFile('index.html');
-
-
+    
     if (process.env.NODE_ENV == 'development') {
       win.loadURL('http://localhost:3000');
       win.webContents.openDevTools();
     } else {
       win.loadFile('./build/index.html');
-      // win.webContents.openDevTools();
       globalShortcut.register('CmdOrCtrl+R', () => {});
       globalShortcut.register('CmdOrCtrl+Shift+R', () => {});
       globalShortcut.register('CmdOrCtrl+Shift+I', () => {

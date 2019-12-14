@@ -1,16 +1,12 @@
 import React, { Component } from "react";
-
 import { Route } from "react-router";
 import { HashRouter, withRouter } from "react-router-dom";
-
 import { inject, observer } from "mobx-react";
 
-import honoka from 'honoka';
-
+/* Stylesheet */
 import "../styles/MainPage.styl";
 
-import config from "../config";
-
+/* Components */
 import Navbar from "./Navbar";
 import MessageList from './MessageList';
 import ChatPage from './ChatPage';
@@ -26,147 +22,141 @@ import GroupChatPage from "./GroupChatPage";
 @inject("store")
 @observer
 class MainPage extends Component {
-  createSocketConnection() {
-    this.ws = new WebSocket(config.wsUrl);
-    const ws = this.ws;
+    retry = 0;
 
-    ws.addEventListener('open', () => {
-      console.log('WebSocket opened.');
-      ws.send(JSON.stringify({
-        uid: this.props.store.uid,
-        token: this.props.store.token
-      }));
-    });
+    componentWillMount() {
+        if (sessionStorage.getItem("userInfo") == null)
+            this.props.history.push("/");
+        else
+            this.props.store.setUserInfo(
+                JSON.parse(sessionStorage.getItem("userInfo"))
+            );
 
-    ws.addEventListener('message', (msg) => {
-      msg = JSON.parse(msg.data);
-      switch (msg.type) {
-        case 'message':
-          console.log(msg);
-          this.props.store.pushNewMessage(msg.from, msg.payload);
-          break;
-        default:
-          break;
-      }
-    });
+        // establish socket connection
+        this.createSocketConnection();
 
+        // get friends list
+        this.props.store.reloadFriendsList();
 
-    ws.addEventListener('error', () => {
-      alert("连接错误。返回登录页面...");
-      this.props.history.push('/');
-    });
-  }
+        // get groups list
+        this.props.store.reloadGroupList();
 
-  forceLogout() {
-    alert("身份认证出现问题，请重新登录。");
+        // get messages list
+        this.props.store.reloadMessageList();
+    }
 
-    sessionStorage.removeItem('userInfo');
-    this.props.history.push('/');
-  }
+    componentWillUnmount() {
+        this.ws.close();
+    }
 
-  componentWillMount() {
-    if (sessionStorage.getItem("userInfo") == null)
-      this.props.history.push("/");
-    else
-      this.props.store.setUserInfo(
-        JSON.parse(sessionStorage.getItem("userInfo"))
-      );
-    
-    // establish socket connection
-    this.createSocketConnection();
+    componentDidMount() {
+        window.browserWindow.getCurrentWindow().setSize(800, 600);
+        this.props.store.setRouter(this.props.history);
+    }
 
-    // get friends list
-    const friendUri = this.props.store.API('friends');
-    honoka.post(friendUri, {
-      data: {
-        uid: this.props.store.uid,
-        token: this.props.store.token
-      }
-    }).then(res => {
-      if (res.status !== 200)
-        this.forceLogout();
-      else
-        this.props.store.updateFriends(res.payload);
-    });
+    // 创建与服务器的 websocket 链接
+    createSocketConnection() {
+        this.ws = new WebSocket(this.props.store.configUrl.wsUrl);
+        const ws = this.ws;
 
-    // get groups list
-    const groupUri = this.props.store.API('getUserGroups');
-    honoka.post(groupUri, {
-      data: {
-        uid: this.props.store.uid,
-        token: this.props.store.token
-      }
-    }).then(res => {
-      if (res.status !== 200)
-        this.forceLogout();
-      else
-        this.props.store.updateGroups(res.payload);
-    });
+        ws.addEventListener('open', () => {
+            ws.send(JSON.stringify({
+               uid: this.props.store.uid,
+                token: this.props.store.token
+            }));
+            this.retry = 0;
+            this.props.store.connectSocketLink(this.ws);
+        });
 
-    this.props.store.reloadMessageList();
-  }
-  componentWillUnmount() {
-    this.ws.close();
-  }
+        ws.addEventListener('message', (msg) => {
+            msg = JSON.parse(msg.data);
+            switch (msg.type) {
+                // receive new message
+                case 'message':
+                    this.props.store.pushNewMessage(msg.from, msg.payload);
+                    break;
+                case 'friends':
+                    this.props.store.reloadFriendsList();
+                    break;
+                case 'groups':
+                    this.props.store.reloadGroupList();
+                    break;
+                default:
+                    break;
+            }
+        });
 
-  componentDidMount() {
-    window.browserWindow.getCurrentWindow().setSize(800, 600);
-  }
+        ws.addEventListener('close', () => {
+            if (this.retry && this.retry >= 3) {
+                alert("连接错误。返回登录页面...");
+                this.props.history.push('/');
+                return;
+            } else if (this.props.store.token) {
+                this.retry = this.retry ? this.retry + 1 : 1;           // retry times
+                setTimeout(() => this.createSocketConnection(), 5000);  // recreate socket connection
+            }
+        });
 
-  render() {
-    return (
-      <div className="mechat-mainpage">
-        <HashRouter history={this.props.history}>
-          <Route path='/app'>
-            <Navbar />
-          </Route>
-          
-          <Route path='/app/message'>
-            <MessageList />
-          </Route>
+        ws.addEventListener('error', () => {
+            alert("连接错误。返回登录页面...");
+            this.props.history.push('/');
+        });
+    }
 
-          <Route path='/app/message/:id'>
-            <ChatPage />
-          </Route>
+    render() {
+        return (
+            <div className="mechat-mainpage">
+                <HashRouter history={this.props.history}>
+                    <Route path='/app'>
+                        <Navbar />
+                    </Route>
 
-          <Route path='/app/groupMessage/:id'>
-            <MessageList />
-            <GroupChatPage />
-          </Route>
+                    <Route path='/app/message'>
+                        <MessageList />
+                    </Route>
 
-          <Route path='/app/friends'>
-            <FriendsList/>
-          </Route>
+                    <Route path='/app/message/:id'>
+                        <ChatPage />
+                    </Route>
 
-          <Route path='/app/friends/:id'>
-            <ProfilePage/>
-          </Route>
+                    <Route path='/app/groupMessage/:id'>
+                        <MessageList />
+                        <GroupChatPage />
+                    </Route>
 
-          <Route path="/app/groups">
-            <GroupList/>
-          </Route>
+                    <Route path='/app/friends'>
+                        <FriendsList />
+                    </Route>
 
-          <Route path="/app/groups/:id">
-            <GroupPage/>
-          </Route>
+                    <Route path='/app/friends/:id'>
+                        <ProfilePage />
+                    </Route>
 
-          <Route path="/app/createNewGroup">
-            <GroupList/>
-            <CreateNewGroupPage />
-          </Route>
+                    <Route path="/app/groups">
+                        <GroupList />
+                    </Route>
 
-          <Route path='/app/editProfile'>
-            <FriendsList />
-            <ProfileEdit />
-          </Route>
+                    <Route path="/app/groups/:id">
+                        <GroupPage />
+                    </Route>
 
-          <Route path='/app/about'>
-            <AboutPage />
-          </Route>
-        </HashRouter>
-      </div>
-    );
-  }
+                    <Route path="/app/createNewGroup">
+                        <GroupList />
+                        <CreateNewGroupPage />
+                    </Route>
+
+                    <Route path='/app/editProfile'>
+                        <FriendsList />
+                        <ProfileEdit />
+                    </Route>
+
+                    <Route path='/app/about'>
+                        <AboutPage />
+                    </Route>
+                </HashRouter>
+            </div>
+        );
+    }
 }
 
 export default withRouter(MainPage);

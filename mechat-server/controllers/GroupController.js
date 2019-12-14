@@ -135,7 +135,7 @@ class GroupController {
         }));
     }
 
-    async createGroup(req, response) {
+    async createGroup(req, response, userMap) {
         response.header("Content-Type", "application/json");
 
         if (!checkField(req.body, ['uid', 'token', 'name', 'description', 'members'])) {
@@ -166,6 +166,15 @@ class GroupController {
         this.addGroupToUserProfile(uid, groupRecord._id.toString());
         memberArray.forEach(member => {
             this.addGroupToUserProfile(member, groupRecord._id.toString(), false);
+            if (userMap[member]) {
+                userMap[member].send(JSON.stringify({
+                    type: 'groups',
+                    payload: {
+                        name,
+                        description
+                    }
+                }));
+            }
         });
 
         response.send(JSON.stringify({
@@ -204,7 +213,7 @@ class GroupController {
         }));
     }
 
-    async inviteToGroup(req, response) {
+    async inviteToGroup(req, response, userMap) {
         response.header("Content-Type", "application/json");
 
         if (!checkField(req.body, ['uid', 'token', 'groupId', 'target'])) {
@@ -221,8 +230,13 @@ class GroupController {
         const user = await this.udb.findOne({ username: target });
         if (!user)
             return;
-
-        this.addGroupToUserProfile(user._id.toString(), groupId, true);
+        const targetUid = user._id.toString();
+        this.addGroupToUserProfile(targetUid, groupId, true);
+        if (userMap[targetUid]) {
+            userMap[targetUid].send(JSON.stringify({
+                type: 'groups'
+            }));
+        }
         response.send(JSON.stringify({
             status: 200,
             message: 'processed'

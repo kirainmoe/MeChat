@@ -9,12 +9,24 @@
         font-size: 14px
         line-height: 40px
         margin: 0px
+    .mechat-profile-account
+        p
+            font-size: 14px
+        p[name='uid']
+            font-size: 9px
+            margin: 0px
+            color: #888
     
     .mechat-profile-edit-avatar img 
         width: 180px
         height: 180px
         border-radius: 50%
         cursor: pointer
+        opacity: 1
+        transition: .3s all ease-out
+        &:hover
+          opacity: 0.7  
+          transform: scale(1.05)
 
     .mechat-profile-edit-container
         margin-top: 50px

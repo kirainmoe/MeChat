@@ -19,6 +19,7 @@ export default class Model {
     // 当前登录用户好友和群聊
     @observable friends = [];
     @observable groups = [];
+    @observable posts = [];
     @observable uidKeyMap = {};
     @observable groupKeyMap = {};
 
@@ -32,6 +33,7 @@ export default class Model {
     };
     @observable fetching = false;           // 消息列表更新状态
     @observable router = null;              // react-router 全局路由对象
+    @observable likes = {};
 
     // 后端 Restful API 链接
     @observable configUrl = {
@@ -69,6 +71,7 @@ export default class Model {
         this.token = null;
         this.friends = [];
         this.groups = [];
+        this.posts = [];
         this.uidKeyMap = {};
         this.groupKeyMap = {};
         if (this.socketLink)
@@ -240,6 +243,22 @@ export default class Model {
         this.messageList[from].last = msg.timestamp;
     }
 
+    // 新动态
+    @action
+    pushNewPost(id, content, images) {
+        this.posts.unshift({
+            _id: id,
+            createdBy: this.uid,
+            createTime: new Date(),
+            content,
+            nickname: this.nickname,
+            avatar: this.avatar.replace(this.API('avatar'), ''),
+            type: 1,
+            images,
+            comments: [],
+        });
+    }
+
     // 更新好友备注
     @action
     updateAlias(target, alias) {
@@ -313,7 +332,7 @@ export default class Model {
             else if (res.status === 200)
                 this.updateFriends(res.payload);
             else
-                console.log('model.reloadGroupList', res);
+                console.log('model.reloadFriendsList', res);
         });
     }
 
@@ -335,5 +354,47 @@ export default class Model {
             else
                 console.log('model.reloadGroupList', res);
         });
+    }
+
+    // 更新好友动态
+    @action
+    reloadPostList() {
+        const postUri = this.API('getFriendsPost');
+        honoka.post(postUri, {
+            data: {
+                uid: this.uid,
+                token: this.token
+            }
+        }).then(res => {
+            if (res.status === 403)
+                this.forceLogout();
+            else if (res.status === 200)
+                this.posts = res.payload;
+            else
+                console.log('model.reloadPostList', res);
+        })
+    }
+
+    // 点赞
+    @action
+    likePost(id) {
+        this.likes[id] = this.likes[id] ? false : true;
+        for (const i in this.posts) {
+            if (this.posts[i]._id === id) {
+                this.posts[i].likes += (this.likes[id] ? 1 : -1);
+                break;
+            }
+        }
+    }
+
+    // 删除
+    @action
+    deletePost(id) {
+        for (const i in this.posts) {
+            if (this.posts[i]._id === id) {
+                this.posts.splice(i, 1);
+                break;
+            }
+        }
     }
 }

@@ -1,0 +1,95 @@
+.mechat-friend-circle
+    width: 240px
+    border-right: 1px solid #eee
+    position: relative
+
+    &.mechat-fc-full-width
+        width: calc(100% - 70px)
+
+    .mechat-fc-create
+        width: 50px
+        height 50px
+        line-height: 50px
+        font-size: 20px
+        border-radius: 50%
+        color: #fff
+        background: rgb(18, 150, 17)
+        border: 0px
+        box-shadow: 1px 1px 3px solid #eee
+        transition: .3s all
+        cursor: pointer
+        position: absolute
+        bottom: 20px
+        right: 20px
+        text-align: center
+        &:hover
+            background: lighten(rgb(18, 150, 17), 10%)
+    
+    .mechat-fc-lists
+        width: 100%
+        height: calc(100% - 40px)
+        overflow-y: auto
+        padding-bottom: 80px
+        .mechat-fc-boundary
+            text-align: center
+            padding: 20px
+            color: #eee
+.mechat-fc-item
+    width: 100%
+    padding: 15px
+    border-bottom: 1px solid #eee
+    .mechat-fc-item-meta
+        display: flex
+        align-items: center
+    .mechat-fc-item-meta-avatar
+        width: 30px
+        height: 30px
+        border-radius: 50%
+        margin-right: 10px
+    .mechat-fc-item-meta-nickname
+        color: #55b4d6
+    .mechat-fc-item-content
+        width: 100%
+        margin: 10px 0px
+        font-size: 14px
+    .mechat-fc-item-actions
+        text-align: right
+        *
+            margin: 0px 5px
+            cursor: pointer
+            color: #000 
+            transition: .1s all ease-out
+            &:hover
+                color: lighten(#000, 50%) 
+        .mechat-fc-like, .mechat-fc-delete
+            background: transparent
+            border: 0
+            outline: 0
+            &.liked > *
+                color: pink
+        a
+            text-decoration: none
+        .mechat-fc-delete
+            font-size: 15px
+
+.mechat-post
+    width: calc(100% - 310px)
+    height: 100%
+    .mechat-post-container
+        height: calc(100% - 40px)
+        overflow-y: auto
+    .mechat-fc-item
+        border: 0px
+
+    .mechat-messages-title
+        background: #fff
+        border-bottom: 1px solid #eee
+    .mechat-fc-textarea
+        width: 100%
+        height: 100px
+        border: 1px solid #eee
+        outline: 0
+        resize: none
+        padding: 10px
+        margin: 20px 0px
+                    

@@ -14,7 +14,6 @@ class CreateNewGroupPage extends Component {
             friends = this.props.store.friends;
         let cnt = 0;
         friends.forEach(friend => {
-            console.log(this.checkBoxes, cnt);
             memberComponents.push(
                 <div className="mechat-cng-member-item" key={cnt}>
                     <input

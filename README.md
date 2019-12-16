@@ -10,7 +10,7 @@ MeChat：一个简单的、跨平台的电脑版聊天程序。
 
 可以在 [Release](https://github.com/kirainmoe/mechat/releases) 页面下载。
 
-目前支持 Windows 7 (or higher)，macOS 10.13 (or higher), Linux.
+目前支持 Windows 7+，macOS 10.13+, Linux.
 
 ## Usage
 
@@ -88,11 +88,21 @@ npm run build
 打包完成会得到 `build` 目录，将其整个目录复制到 `mechat-client` 目录中，然后进入该目录执行打包命令：
 
 ```bash
-npm run pack             # 打包 windows 程序
+npm run pack             # 打包 Windows 程序
 npm run pack:macos       # 打包 macOS 程序
+npm run pack:linux       # 打包 Linux 程序
 ```
 
 打包的可执行程序会存放在上一级目录的 `release` 文件夹中。
+
+## Functions
+
+- [x] 用户登录、注册功能
+- [x] 用户资料系统
+- [x] 好友和备注系统
+- [x] 群聊系统
+- [x] 实时信息推送
+- [x] 文字和图片发送
 
 ## Tech Stack
 

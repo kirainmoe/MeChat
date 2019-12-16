@@ -2,6 +2,7 @@ const UserController = require('./UserController');
 const ProfileController = require('./ProfileController');
 const CharController = require('./ChatController');
 const GroupController = require('./GroupController');
+const CircleController = require('./CircleController');
 
 const connectionMap = new Map();
 
@@ -13,6 +14,7 @@ const registerRouter = (app, db) => {
     const profile = new ProfileController(db);
     const chat = new CharController(db);
     const group = new GroupController(db);
+    const circle = new CircleController(db);
 
     const udb = db.model('mc_users', UserSchema);
 
@@ -52,6 +54,12 @@ const registerRouter = (app, db) => {
     app.post('/addGroup', (req, res) => group.addGroup(req, res, connectionMap));
     app.post('/inviteToGroup', (req, res) => group.inviteToGroup(req, res, connectionMap));
     app.post('/exitGroup', (req, res) => group.exitGroup(req, res));
+
+    // friends circle
+    app.post('/createPost', (req, res) => circle.createPost(req, res));
+    app.post('/getFriendsPost', (req, res) => circle.getFriendsPost(req, res));
+    app.post('/likePost', (req, res) => circle.likePost(req, res));
+    app.post('/deletePost', (req, res) => circle.deletePost(req, res));
 
     // websocket
     app.ws('/entry', async (ws, req) => {

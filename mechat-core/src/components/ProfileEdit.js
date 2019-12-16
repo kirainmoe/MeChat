@@ -109,6 +109,10 @@ class ProfileEdit extends Component {
                             title="点击修改头像"
                         ></img>
                     </div>
+                    <div className="mechat-profile-account">
+                        <p name="username">MeChat 账号：{this.props.store.username}</p>
+                        <p name="uid">UID: {this.props.store.uid}</p>
+                    </div>
                     <form
                         ref={ref => (this.uploadForm = ref)}
                         action={this.props.store.API("uploadAvatar")}

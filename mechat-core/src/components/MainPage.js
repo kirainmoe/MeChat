@@ -8,16 +8,19 @@ import "../styles/MainPage.styl";
 
 /* Components */
 import Navbar from "./Navbar";
-import MessageList from './MessageList';
-import ChatPage from './ChatPage';
+import MessageList from "./MessageList";
+import ChatPage from "./ChatPage";
 import FriendsList from "./FriendsList";
 import ProfilePage from "./ProfilePage";
-import ProfileEdit from './ProfileEdit';
+import ProfileEdit from "./ProfileEdit";
 import AboutPage from "./AboutPage";
-import GroupList from './GroupList';
+import GroupList from "./GroupList";
 import CreateNewGroupPage from "./CreateNewGroupPage";
 import GroupPage from "./GroupPage";
 import GroupChatPage from "./GroupChatPage";
+import FriendCircle from "./FriendCircle";
+import CreatePostPage from "./CreatePostPage";
+import PostPage from "./PostPage";
 
 @inject("store")
 @observer
@@ -25,12 +28,8 @@ class MainPage extends Component {
     retry = 0;
 
     componentWillMount() {
-        if (sessionStorage.getItem("userInfo") == null)
-            this.props.history.push("/");
-        else
-            this.props.store.setUserInfo(
-                JSON.parse(sessionStorage.getItem("userInfo"))
-            );
+        if (sessionStorage.getItem("userInfo") == null) this.props.history.push("/");
+        else this.props.store.setUserInfo(JSON.parse(sessionStorage.getItem("userInfo")));
 
         // establish socket connection
         this.createSocketConnection();
@@ -59,26 +58,28 @@ class MainPage extends Component {
         this.ws = new WebSocket(this.props.store.configUrl.wsUrl);
         const ws = this.ws;
 
-        ws.addEventListener('open', () => {
-            ws.send(JSON.stringify({
-               uid: this.props.store.uid,
-                token: this.props.store.token
-            }));
+        ws.addEventListener("open", () => {
+            ws.send(
+                JSON.stringify({
+                    uid: this.props.store.uid,
+                    token: this.props.store.token
+                })
+            );
             this.retry = 0;
             this.props.store.connectSocketLink(this.ws);
         });
 
-        ws.addEventListener('message', (msg) => {
+        ws.addEventListener("message", msg => {
             msg = JSON.parse(msg.data);
             switch (msg.type) {
                 // receive new message
-                case 'message':
+                case "message":
                     this.props.store.pushNewMessage(msg.from, msg.payload);
                     break;
-                case 'friends':
+                case "friends":
                     this.props.store.reloadFriendsList();
                     break;
-                case 'groups':
+                case "groups":
                     this.props.store.reloadGroupList();
                     break;
                 default:
@@ -86,20 +87,20 @@ class MainPage extends Component {
             }
         });
 
-        ws.addEventListener('close', () => {
+        ws.addEventListener("close", () => {
             if (this.retry && this.retry >= 3) {
                 alert("连接错误。返回登录页面...");
-                this.props.history.push('/');
+                this.props.history.push("/");
                 return;
             } else if (this.props.store.token) {
-                this.retry = this.retry ? this.retry + 1 : 1;           // retry times
-                setTimeout(() => this.createSocketConnection(), 5000);  // recreate socket connection
+                this.retry = this.retry ? this.retry + 1 : 1; // retry times
+                setTimeout(() => this.createSocketConnection(), 5000); // recreate socket connection
             }
         });
 
-        ws.addEventListener('error', () => {
+        ws.addEventListener("error", () => {
             alert("连接错误。返回登录页面...");
-            this.props.history.push('/');
+            this.props.history.push("/");
         });
     }
 
@@ -107,28 +108,28 @@ class MainPage extends Component {
         return (
             <div className="mechat-mainpage">
                 <HashRouter history={this.props.history}>
-                    <Route path='/app'>
+                    <Route path="/app">
                         <Navbar />
                     </Route>
 
-                    <Route path='/app/message'>
+                    <Route path="/app/message">
                         <MessageList />
                     </Route>
 
-                    <Route path='/app/message/:id'>
+                    <Route path="/app/message/:id">
                         <ChatPage />
                     </Route>
 
-                    <Route path='/app/groupMessage/:id'>
+                    <Route path="/app/groupMessage/:id">
                         <MessageList />
                         <GroupChatPage />
                     </Route>
 
-                    <Route path='/app/friends'>
+                    <Route path="/app/friends">
                         <FriendsList />
                     </Route>
 
-                    <Route path='/app/friends/:id'>
+                    <Route path="/app/friends/:id">
                         <ProfilePage />
                     </Route>
 
@@ -145,12 +146,26 @@ class MainPage extends Component {
                         <CreateNewGroupPage />
                     </Route>
 
-                    <Route path='/app/editProfile'>
+                    <Route path="/app/editProfile">
                         <FriendsList />
                         <ProfileEdit />
                     </Route>
 
-                    <Route path='/app/about'>
+                    <Route path="/app/circle">
+                        <FriendCircle />
+                    </Route>
+
+                    <Route path="/app/posts/:id">
+                        <FriendCircle/>
+                        <PostPage/>
+                    </Route>
+
+                    <Route path="/app/createPost">
+                        <FriendCircle />
+                        <CreatePostPage />
+                    </Route>
+
+                    <Route path="/app/about">
                         <AboutPage />
                     </Route>
                 </HashRouter>

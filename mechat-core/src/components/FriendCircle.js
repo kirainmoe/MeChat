@@ -93,7 +93,6 @@ class FriendCircle extends Component {
                             </button>
                         ) : null}
                     </div>
-                    <div className="mechat-fc-item-comments"></div>
                 </div>
             );
         });

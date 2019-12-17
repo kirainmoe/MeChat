@@ -83,9 +83,9 @@ class CircleController {
                 user = this.userList[post.createdBy]
                     ? this.userList[post.createdBy]
                     : await this.getUserInfo(post.createdBy);
-            let nextComments = await this.buildCommentsTree(post);
+            let nextComments = await this.buildCommentsTree(post._id.toString());
             res.push({
-                ...post,
+                ...post._doc,
                 nickname: user.nickname,
                 avatar: user.avatar,
                 comments: nextComments

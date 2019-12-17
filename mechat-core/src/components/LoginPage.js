@@ -84,8 +84,8 @@ class LoginPage extends Component {
 
     componentDidMount() {
         window.browserWindow.getCurrentWindow().setSize(300, 500);
-        this.usernameInput.focus();
         this.props.store.setRouter(this.props.history);
+        setTimeout(() => this.usernameInput.focus(), 100);
     }
 
     render() {

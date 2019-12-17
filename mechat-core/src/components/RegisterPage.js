@@ -34,7 +34,12 @@ class RegisterPage extends Component {
                 if (res.status !== 200) {
                     alert("注册失败，错误信息：" + res.message);
                 } else {
-                    alert("注册成功~将回到登录页面。");
+                    window.browserWindow.dialog.showMessageBoxSync({
+                        type: 'info',
+                        title: '注册成功',
+                        message: "注册成功~将回到登录页面。",
+                        button: ['ok']
+                    });
                     this.props.history.push("/");
                 }
             });

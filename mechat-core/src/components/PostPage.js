@@ -20,35 +20,40 @@ class PostPage extends Component {
         this.setState({
             returnId: this.props.match.params.id,
             nickname: post ? post.nickname : null
-        })
+        });
     }
 
     getPost(id) {
         for (const i in this.props.store.posts) {
-            if (this.props.store.posts[i]._id === id) return this.props.store.posts[i];
+            if (this.props.store.posts[i]._id === id)
+                return this.props.store.posts[i];
         }
         return null;
     }
 
     reply() {
-        honoka.post(this.props.store.API('createPost'), {
-            data: {
-                uid: this.props.store.uid,
-                token: this.props.store.token,
-                content: this.commentContent.value,
-                type: 2,
-                replyTo: this.state.returnId
-            }
-        }).then(res => {
-            console.log(res);
-            if (res.status === 403) {
-                this.props.store.forceLogout();
-            } else if (res.status !== 200) {
-                console.log("FriendCircle.likePost", res.message);
-            } else {
-                this.props.store.reloadPostList();
-            }
-        });
+        honoka
+            .post(this.props.store.API("createPost"), {
+                data: {
+                    uid: this.props.store.uid,
+                    token: this.props.store.token,
+                    content: this.commentContent.value,
+                    type: 2,
+                    replyTo: this.state.returnId
+                }
+            })
+            .then(res => {
+                console.log(res);
+                if (res.status === 403) {
+                    this.props.store.forceLogout();
+                } else if (res.status !== 200) {
+                    console.log("FriendCircle.likePost", res.message);
+                } else {
+                    this.props.store.reloadPostList();
+                    this.sendButton.innerHTML = "已发送~";
+                    setTimeout(() => this.sendButton.innerHTML = "回复", 4000);
+                }
+            });
     }
 
     likePost(id) {
@@ -92,6 +97,44 @@ class PostPage extends Component {
             });
     }
 
+    renderComments(post) {
+        const res = [];
+        if (!post) return;
+
+        post.comments.forEach(comment => {
+            res.push(
+                <div
+                    key={comment._id}
+                    className="mechat-fc-comment-item"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        this.setState({
+                            returnId: comment._id,
+                            nickname: comment.nickname
+                        });
+                        this.commentContent.focus();
+                    }}
+                >
+                    <span className="mechat-fc-comment-author">
+                        {comment.nickname}
+                    </span>
+                    <span>回复</span>
+                    <span className="mechat-fc-comment-reply-target">
+                        {post.nickname}：
+                    </span>
+                    <span>{comment.content}</span>
+
+                    <div className="mechat-fc-subcomment-list">
+                        {this.renderComments(comment)}
+                    </div>
+                </div>
+            );
+        });
+
+        return res;
+    }
 
     render() {
         const postId = this.props.match.params.id;
@@ -110,10 +153,15 @@ class PostPage extends Component {
                         <div className="mechat-fc-item-meta">
                             <img
                                 className="mechat-fc-item-meta-avatar"
-                                src={this.props.store.API("avatar", post.avatar)}
+                                src={this.props.store.API(
+                                    "avatar",
+                                    post.avatar
+                                )}
                                 alt="avatar"
                             />
-                            <span className="mechat-fc-item-meta-nickname">{post.nickname}</span>
+                            <span className="mechat-fc-item-meta-nickname">
+                                {post.nickname}
+                            </span>
                         </div>
                         <div
                             className="mechat-fc-item-content"
@@ -123,11 +171,15 @@ class PostPage extends Component {
                         ></div>
                         <div className="mechat-fc-item-actions">
                             <button
-                                className={"mechat-fc-like" + (liked ? " liked" : "")}
+                                className={
+                                    "mechat-fc-like" + (liked ? " liked" : "")
+                                }
                                 onClick={() => this.likePost(post._id)}
                             >
                                 <i className="fa fa-heart" />
-                                <span className="mechat-fc-like-cnt">{post.likes}</span>
+                                <span className="mechat-fc-like-cnt">
+                                    {post.likes}
+                                </span>
                             </button>
                             <Link to={`/app/posts/${post._id}`}>
                                 <i className="fa fa-commenting-o" />
@@ -141,16 +193,22 @@ class PostPage extends Component {
                                 </button>
                             ) : null}
                         </div>
-                            <div className="mechat-fc-item-comments">
-                                {/*this.renderComments(post)*/}
-                            </div>
+                        <div className="mechat-fc-item-comments">
+                            {this.renderComments(post)}
+                        </div>
                         <div className="mechat-fc-item-input">
                             <textarea
                                 ref={ref => (this.commentContent = ref)}
                                 className="mechat-fc-textarea"
                                 placeholder={`回复 ${this.state.nickname}：`}
                             />
-                            <button className="mechat-chat-send" onClick={() => this.reply()}>发送</button>
+                            <button
+                                ref={ref => (this.sendButton = ref)}
+                                className="mechat-chat-send"
+                                onClick={() => this.reply()}
+                            >
+                                回复
+                            </button>
                         </div>
                     </div>
                 </div>

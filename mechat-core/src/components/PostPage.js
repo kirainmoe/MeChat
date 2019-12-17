@@ -193,7 +193,9 @@ class PostPage extends Component {
                                 </button>
                             ) : null}
                         </div>
-                        <div className="mechat-fc-item-comments">
+                        <div className="mechat-fc-item-comments" style={{
+                            display: post.comments.length ? 'block' : 'none'
+                        }}>
                             {this.renderComments(post)}
                         </div>
                         <div className="mechat-fc-item-input">

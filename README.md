@@ -4,7 +4,7 @@ MeChat：一个简单的、跨平台的电脑版聊天程序。
 
 这是厦门大学信息学院 2018 级计算机系数据结构课程设计：**题目七《实现电脑版的微信》**。
 
-![TIM截图20191213180250.png](https://i.loli.net/2019/12/13/6sXbIYe1pS9gLAJ.png)
+![chatting.png](https://i.loli.net/2019/12/17/NdeBzYkitLEyqRj.png)
 
 ## Demo
 
@@ -25,7 +25,7 @@ MeChat 服务端和客户端开发环境需要 `Node.js` 和 `MongoDB` 环境：
 
 ### 克隆代码
 
-克隆此仓库的代码可能需要下载 `git`，或直接 Download-Zip：
+克隆此仓库的代码可能需要下载 `git`。
 
 ```bash
 git clone https://github.com/kirainmoe/mechat
@@ -46,7 +46,7 @@ npm install        # 安装依赖
 然后启动 MeChat 服务端：
 
 ```bash
-node app.js
+npm start
 ```
 
 在服务器端上部署的方法与上述一致。
@@ -103,6 +103,7 @@ npm run pack:linux       # 打包 Linux 程序
 - [x] 群聊系统
 - [x] 实时信息推送
 - [x] 文字和图片发送
+- [x] 好友动态
 
 ## Tech Stack
 
@@ -129,17 +130,21 @@ npm run pack:linux       # 打包 Linux 程序
 
 ## Screenshot
 
-![TIM截图20191213180045.png](https://i.loli.net/2019/12/13/2dgbEzsk9TNcyKW.png)
+![login.png](https://i.loli.net/2019/12/17/EsZVKO6rAIH5axp.png)
 
-![TIM截图20191213180108.png](https://i.loli.net/2019/12/13/Xvc7znoxTrwHOIj.png)
+![register.png](https://i.loli.net/2019/12/17/K9gAi6rf1U4tCTj.png)
 
-![TIM截图20191213180129.png](https://i.loli.net/2019/12/13/3qGhftY6CnTiKvg.png)
+![chatting.png](https://i.loli.net/2019/12/17/NdeBzYkitLEyqRj.png)
 
-![TIM截图20191213180250.png](https://i.loli.net/2019/12/13/6sXbIYe1pS9gLAJ.png)
+![profile-edit.png](https://i.loli.net/2019/12/17/2qxNlmRneDgHO3f.png)
 
-![TIM截图20191213180206.png](https://i.loli.net/2019/12/13/BAWaHjxM9Rzl28C.png)
+![group.png](https://i.loli.net/2019/12/17/kyvHTzjaoeSrUpc.png)
 
-![TIM截图20191213180258.png](https://i.loli.net/2019/12/13/VQvD7bwU2GaJqxu.png)
+![circle-1.png](https://i.loli.net/2019/12/17/xDrpdIAz4UXsJbG.png)
+
+![circle-3.png](https://i.loli.net/2019/12/17/5L4dNjwrvcgyGAO.png)
+
+![circle-2.png](https://i.loli.net/2019/12/17/IHz1cJufgesGdNT.png)
 
 ## Copyright & License
 

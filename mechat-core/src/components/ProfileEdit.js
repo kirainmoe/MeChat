@@ -56,13 +56,13 @@ class ProfileEdit extends Component {
             signature,
             avatar,
             token,
-            id: uid
+            id: uid,
+            username: this.props.store.username
         });
 
         honoka
             .post(this.props.store.API("updateProfile"), {
                 data: {
-                    username: this.props.store.username,
                     nickname,
                     mail,
                     signature,
